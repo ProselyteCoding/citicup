@@ -3,6 +3,11 @@ import { Link } from "react-router-dom";
 import * as echarts from "echarts";
 import "./RiskSignals.css";
 
+
+import NavBar from "../../components/NavBar/NavBar"; 
+
+
+
 const Dashboard = () => {
   // 创建各图表的 DOM 引用
   const exposurePieRef = useRef(null);
@@ -657,45 +662,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      <nav className="navbar">
-        <div className="nav-top">
-          <div className="logo">RiskFX</div>
-          <div style={{ color: "white" }}>
-            <span className="market-status">
-              <span class="market-status">
-                <i class="fas fa-circle"></i> 市场开放中
-              </span>
-            </span>
-          </div>
-        </div>
-        <div className="nav-modules">
-          <div className="nav-module">
-            <Link to="/">
-              <i className="fas fa-globe"></i>
-              <h3>外汇市场情况</h3>
-              <p>实时汇率与市场动态</p>
-            </Link>
-          </div>
-          <div className="nav-module">
-            <Link to="/RiskSignals">
-              <i className="fas fa-exclamation-triangle"></i>
-              <h3>风险信号可视化</h3>
-              <p>风险预警与监控</p>
-            </Link>
-          </div>
-          <div className="nav-module">
-            <i className="fas fa-lightbulb"></i>
-            <h3>"一键式"企业决策</h3>
-            <p>智能建议与执行</p>
-          </div>
-          <div className="nav-module">
-            <i className="fas fa-file-download"></i>
-            <h3>报告下载</h3>
-            <p>分析报告与数据导出</p>
-          </div>
-        </div>
-      </nav>
-
+      <NavBar />
       {/* 主体内容 */}
       <div className="container">
         <div className="main-content">
