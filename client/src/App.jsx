@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/RiskSignals/RiskSignals';
-import Home from './pages/Home/Index';
+import Home from './pages/Home/Home';
 
 function App() {
   return (
