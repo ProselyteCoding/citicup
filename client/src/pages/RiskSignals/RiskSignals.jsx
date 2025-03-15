@@ -1,12 +1,7 @@
 import React, { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import * as echarts from "echarts";
-import "./RiskSignals.css";
-
-
-import NavBar from "../../components/NavBar/NavBar"; 
-
-
+import NavBar from "../../components/NavBar/NavBar";
+import styles from "./RiskSignals.module.css";
 
 const Dashboard = () => {
   // 创建各图表的 DOM 引用
@@ -664,42 +659,42 @@ const Dashboard = () => {
     <div>
       <NavBar />
       {/* 主体内容 */}
-      <div className="container">
-        <div className="main-content">
-          <div className="dashboard" id="riskDashboard">
-            <div className="dashboard-header">
+      <div className={styles.container}>
+        <div className={styles["main-content"]}>
+          <div className={styles.dashboard} id="riskDashboard">
+            <div className={styles["dashboard-header"]}>
               <h2>风险DNA扫描</h2>
-              <div className="actions">
-                <button id="manualScan" className="primary-button">
+              <div className={styles.actions}>
+                <button id="manualScan" className={styles["primary-button"]}>
                   <i className="fas fa-sync"></i>
                   <span>立即扫描</span>
                 </button>
-                <span className="last-update">
+                <span className={styles["last-update"]}>
                   上次更新：<span id="lastUpdateTime">--</span>
                 </span>
               </div>
             </div>
 
-            <div className="dashboard-grid">
+            <div className={styles["dashboard-grid"]}>
               {/* 货币敞口分布 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>货币敞口分布</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="exposure-pie"
                   ref={exposurePieRef}
                 ></div>
               </div>
 
               {/* 高风险货币列表 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>高风险货币列表</h3>
                 </div>
-                <div className="list-container">
-                  <table className="risk-table">
+                <div className={styles["list-container"]}>
+                  <table className={styles["risk-table"]}>
                     <thead>
                       <tr>
                         <th>货币</th>
@@ -712,7 +707,9 @@ const Dashboard = () => {
                       <tr>
                         <td>EUR/USD</td>
                         <td>
-                          <span className="risk-level risk-high">高风险</span>
+                          <span className={`${styles["risk-level"]} ${styles["risk-high"]}`}>
+                            高风险
+                          </span>
                         </td>
                         <td>38%</td>
                         <td>
@@ -725,7 +722,9 @@ const Dashboard = () => {
                       <tr>
                         <td>GBP/USD</td>
                         <td>
-                          <span className="risk-level risk-medium">中风险</span>
+                          <span className={`${styles["risk-level"]} ${styles["risk-medium"]}`}>
+                            中风险
+                          </span>
                         </td>
                         <td>25%</td>
                         <td>
@@ -741,56 +740,56 @@ const Dashboard = () => {
               </div>
 
               {/* 账期风险分布 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>账期风险分布</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="paymentTermRiskChart"
                   ref={paymentTermRiskRef}
                 ></div>
               </div>
 
               {/* 风险传导路径 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>风险传导路径</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="risk-path"
                   ref={riskPathRef}
                 ></div>
               </div>
 
               {/* ERI指数 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>宏观风险指数 (ERI)</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="eriChart"
                   ref={eriRef}
                 ></div>
               </div>
 
               {/* 风险信号分析 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>风险信号分析</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="riskSignalsChart"
                   ref={riskSignalsRef}
                 ></div>
               </div>
 
               {/* 单一货币对回测分析 */}
-              <div className="dashboard-card full-width">
-                <div className="card-header">
+              <div className={`${styles["dashboard-card"]} ${styles["full-width"]}`}>
+                <div className={styles["card-header"]}>
                   <h3>单一货币对回测分析</h3>
                   <div style={{ marginTop: "10px" }}>
                     <select
@@ -810,7 +809,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="backtestChart"
                   style={{ height: "400px" }}
                   ref={backtestRef}

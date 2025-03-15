@@ -1,13 +1,14 @@
 import React from "react";
-import NavBar from "../../components/NavBar/NavBar"; 
+import NavBar from "../../components/NavBar/NavBar";
+import styles from "./Home.module.css";
 
 const Home = () => {
   return (
     <div>
       <NavBar />
-      <div className="container">
-        <div className="main-content">
-          <h1>首页</h1>
+      <div className={styles.container}>
+        <div className={styles.mainContent}>
+          <h1 className={styles.title}>首页</h1>
         </div>
       </div>
     </div>

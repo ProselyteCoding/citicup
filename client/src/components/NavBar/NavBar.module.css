@@ -1,0 +1,72 @@
+.navbar {
+  background-color: #003366;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: fixed; 
+  top: 0;        
+  left: 0;       
+  width: 100%;  
+  z-index: 999;  
+}
+
+
+.navTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navModules {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.navModule {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+}
+
+.navModule:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.navModule h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.navModule p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  color: white;
+}
+
+.navModule i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  color: white;
+}
+
+.marketStatus {
+  color: #2ecc71;
+}
