@@ -3,11 +3,12 @@ import * as echarts from "echarts";
 import NavBar from "../../components/NavBar/NavBar";
 import styles from "./OneClickDecision.module.css";
 
-function ForexRiskManagement() {
+const ForexRiskManagement = () => {
   // 图表容器 DOM 引用
   const hedgingChartRef = useRef(null);
   const stressTestChartRef = useRef(null);
   const backtestChartRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // ECharts 实例引用
   const hedgingChartInstance = useRef(null);
@@ -16,12 +17,14 @@ function ForexRiskManagement() {
 
   // 文件名状态
   const [fileInfo, setFileInfo] = useState("");
+  // 压力测试情景状态
+  const [scenario, setScenario] = useState("historical");
 
-  // 和原脚本中一致的模拟数据
+  // 模拟数据
   const currencyPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD"];
 
-  // 与原脚本相同的函数
-  function generateCorrelationData() {
+  // 生成相关系数数据（目前未使用）
+  const generateCorrelationData = () => {
     const data = [];
     const correlationValues = [
       [1, 0.8, -0.3, -0.5, 0.6],
@@ -30,17 +33,16 @@ function ForexRiskManagement() {
       [-0.5, -0.4, 0.6, 1, -0.3],
       [0.6, 0.7, -0.1, -0.3, 1],
     ];
-
     for (let i = 0; i < currencyPairs.length; i++) {
       for (let j = 0; j < currencyPairs.length; j++) {
         data.push([i, j, correlationValues[i][j]]);
       }
     }
     return data;
-  }
+  };
 
   // 渲染对冲建议图表
-  function renderHedgingChart() {
+  const renderHedgingChart = () => {
     if (!hedgingChartInstance.current) return;
     const option = {
       title: {
@@ -49,9 +51,7 @@ function ForexRiskManagement() {
       },
       tooltip: {
         trigger: "axis",
-        axisPointer: {
-          type: "shadow",
-        },
+        axisPointer: { type: "shadow" },
       },
       legend: {
         data: ["当前持仓", "建议持仓", "对冲比例"],
@@ -74,9 +74,7 @@ function ForexRiskManagement() {
           min: 0,
           max: 2500000,
           position: "left",
-          axisLabel: {
-            formatter: "${value}",
-          },
+          axisLabel: { formatter: "${value}" },
         },
         {
           type: "value",
@@ -84,9 +82,7 @@ function ForexRiskManagement() {
           min: 0,
           max: 100,
           position: "right",
-          axisLabel: {
-            formatter: "{value}%",
-          },
+          axisLabel: { formatter: "{value}%" },
         },
       ],
       series: [
@@ -94,38 +90,29 @@ function ForexRiskManagement() {
           name: "当前持仓",
           type: "bar",
           data: [1000000, 800000, 2000000, 500000, 1500000],
-          itemStyle: {
-            color: "#3498db",
-          },
+          itemStyle: { color: "#3498db" },
         },
         {
           name: "建议持仓",
           type: "bar",
           data: [700000, 600000, 1800000, 800000, 1200000],
-          itemStyle: {
-            color: "#2ecc71",
-          },
+          itemStyle: { color: "#2ecc71" },
         },
         {
           name: "对冲比例",
           type: "line",
           yAxisIndex: 1,
           data: [30, 25, 10, 60, 20],
-          itemStyle: {
-            color: "#e74c3c",
-          },
-          label: {
-            show: true,
-            formatter: "{c}%",
-          },
+          itemStyle: { color: "#e74c3c" },
+          label: { show: true, formatter: "{c}%" },
         },
       ],
     };
     hedgingChartInstance.current.setOption(option);
-  }
+  };
 
   // 渲染压力测试图表
-  function renderStressTestChart() {
+  const renderStressTestChart = () => {
     if (!stressTestChartInstance.current) return;
     const option = {
       title: {
@@ -134,9 +121,7 @@ function ForexRiskManagement() {
       },
       tooltip: {
         trigger: "axis",
-        axisPointer: {
-          type: "shadow",
-        },
+        axisPointer: { type: "shadow" },
       },
       legend: {
         data: ["潜在损失", "发生概率"],
@@ -151,10 +136,7 @@ function ForexRiskManagement() {
       xAxis: {
         type: "category",
         data: ["美联储加息", "欧债危机", "英国脱欧"],
-        axisLabel: {
-          interval: 0,
-          rotate: 15,
-        },
+        axisLabel: { interval: 0, rotate: 15 },
       },
       yAxis: [
         {
@@ -163,9 +145,7 @@ function ForexRiskManagement() {
           min: 0,
           max: 100000,
           position: "left",
-          axisLabel: {
-            formatter: "${value}",
-          },
+          axisLabel: { formatter: "${value}" },
         },
         {
           type: "value",
@@ -173,9 +153,7 @@ function ForexRiskManagement() {
           min: 0,
           max: 100,
           position: "right",
-          axisLabel: {
-            formatter: "{value}%",
-          },
+          axisLabel: { formatter: "{value}%" },
         },
       ],
       series: [
@@ -183,30 +161,23 @@ function ForexRiskManagement() {
           name: "潜在损失",
           type: "bar",
           data: [85000, 62000, 45000],
-          itemStyle: {
-            color: "#e74c3c",
-          },
+          itemStyle: { color: "#e74c3c" },
         },
         {
           name: "发生概率",
           type: "line",
           yAxisIndex: 1,
           data: [15, 12, 18],
-          itemStyle: {
-            color: "#3498db",
-          },
-          label: {
-            show: true,
-            formatter: "{c}%",
-          },
+          itemStyle: { color: "#3498db" },
+          label: { show: true, formatter: "{c}%" },
         },
       ],
     };
     stressTestChartInstance.current.setOption(option);
-  }
+  };
 
   // 渲染回测结果图表
-  function renderBacktestChart() {
+  const renderBacktestChart = () => {
     if (!backtestChartInstance.current) return;
     const option = {
       title: {
@@ -215,9 +186,7 @@ function ForexRiskManagement() {
       },
       tooltip: {
         trigger: "axis",
-        axisPointer: {
-          type: "cross",
-        },
+        axisPointer: { type: "cross" },
       },
       legend: {
         data: ["对冲前收益", "对冲后收益", "累计净收益"],
@@ -231,132 +200,99 @@ function ForexRiskManagement() {
       },
       xAxis: {
         type: "category",
-        data: [
-          "2024-01",
-          "2024-02",
-          "2024-03",
-          "2024-04",
-          "2024-05",
-          "2024-06",
-        ],
+        data: ["2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06"],
         boundaryGap: false,
       },
       yAxis: {
         type: "value",
-        axisLabel: {
-          formatter: "{value}%",
-        },
+        axisLabel: { formatter: "{value}%" },
       },
       series: [
         {
           name: "对冲前收益",
           type: "line",
           data: [2.8, -1.5, 3.2, 1.8, -2.1, 2.5],
-          itemStyle: {
-            color: "#95a5a6",
-          },
+          itemStyle: { color: "#95a5a6" },
         },
         {
           name: "对冲后收益",
           type: "line",
           data: [2.5, 1.2, 2.8, 2.2, 1.5, 2.8],
-          itemStyle: {
-            color: "#2ecc71",
-          },
+          itemStyle: { color: "#2ecc71" },
         },
         {
           name: "累计净收益",
           type: "line",
           data: [2.38, 3.4, 6.2, 8.4, 9.9, 12.7],
-          itemStyle: {
-            color: "#3498db",
-          },
-          lineStyle: {
-            width: 3,
-          },
-          emphasis: {
-            lineStyle: {
-              width: 4,
-            },
-          },
+          itemStyle: { color: "#3498db" },
+          lineStyle: { width: 3 },
+          emphasis: { lineStyle: { width: 4 } },
         },
       ],
     };
     backtestChartInstance.current.setOption(option);
-  }
+  };
 
-  // 切换情景按钮逻辑
-  function switchScenario(type, event) {
-    // 去除所有按钮的 active 样式
-    document
-      .querySelectorAll(".tab-btn")
-      .forEach((btn) => btn.classList.remove("active"));
-    // 给当前点击的按钮添加 active
-    event.currentTarget.classList.add("active");
-    // 这里可以添加切换不同情景的逻辑
-  }
+  // 切换压力测试情景（采用 state 管理）
+  const handleScenarioSwitch = (type) => {
+    setScenario(type);
+    // 此处可根据情景切换加载不同数据或图表配置
+  };
 
-  // 文件上传
-  function handleFileUpload(event) {
+  // 文件上传处理（使用箭头函数与 useRef）
+  const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       setFileInfo(`已选择: ${file.name}`);
       const reader = new FileReader();
-      reader.onload = function (e) {
+      reader.onload = (e) => {
         processPortfolioData(e.target.result);
       };
       reader.readAsText(file);
     }
-  }
+  };
 
   // 处理文件数据
-  function processPortfolioData(data) {
+  const processPortfolioData = (data) => {
     try {
       updatePortfolioDisplay();
       alert("持仓数据已成功更新！");
     } catch (error) {
       alert("数据处理出错，请检查文件格式是否正确。");
     }
-  }
+  };
 
-  // 更新持仓展示
-  function updatePortfolioDisplay() {
-    // 这里可以添加更新图表和表格的逻辑
-  }
+  // 更新持仓展示（此处仅为占位，可根据需求补充逻辑）
+  const updatePortfolioDisplay = () => {
+    // 添加更新图表和表格的逻辑
+  };
 
   // 刷新数据
-  function refreshPortfolioData() {
+  const refreshPortfolioData = () => {
     alert("正在刷新数据...");
-    // 这里可以添加从后端获取最新数据的逻辑
-  }
+    // 添加从后端获取最新数据的逻辑
+  };
 
-  // 初始化图表 & 监听窗口大小变化
+  // 初始化图表与监听窗口大小变化
   useEffect(() => {
-    // 初始化 ECharts 实例
     if (hedgingChartRef.current) {
       hedgingChartInstance.current = echarts.init(hedgingChartRef.current);
       renderHedgingChart();
     }
     if (stressTestChartRef.current) {
-      stressTestChartInstance.current = echarts.init(
-        stressTestChartRef.current
-      );
+      stressTestChartInstance.current = echarts.init(stressTestChartRef.current);
       renderStressTestChart();
     }
     if (backtestChartRef.current) {
       backtestChartInstance.current = echarts.init(backtestChartRef.current);
       renderBacktestChart();
     }
-
-    // 窗口大小改变时重绘图表
     const handleResize = () => {
       hedgingChartInstance.current?.resize();
       stressTestChartInstance.current?.resize();
       backtestChartInstance.current?.resize();
     };
     window.addEventListener("resize", handleResize);
-
-    // 清理
     return () => {
       window.removeEventListener("resize", handleResize);
       hedgingChartInstance.current?.dispose();
@@ -378,16 +314,14 @@ function ForexRiskManagement() {
             <div className={styles.uploadSection}>
               <input
                 type="file"
-                id="portfolioData"
+                ref={fileInputRef}
                 accept=".csv,.xlsx"
                 style={{ display: "none" }}
                 onChange={handleFileUpload}
               />
               <button
                 className={styles.uploadBtn}
-                onClick={() =>
-                  document.getElementById("portfolioData").click()
-                }
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
               >
                 <i className="fas fa-upload"></i> 上传持仓数据
               </button>
@@ -503,14 +437,18 @@ function ForexRiskManagement() {
           <div className={styles.stressTestScenarios}>
             <div className={styles.scenarioTabs}>
               <button
-                className={`${styles.tabBtn} ${styles.tabBtnActive}`}
-                onClick={(e) => switchScenario("historical", e)}
+                className={`${styles.tabBtn} ${
+                  scenario === "historical" ? styles.tabBtnActive : ""
+                }`}
+                onClick={() => handleScenarioSwitch("historical")}
               >
                 历史情景
               </button>
               <button
-                className={styles.tabBtn}
-                onClick={(e) => switchScenario("hypothetical", e)}
+                className={`${styles.tabBtn} ${
+                  scenario === "hypothetical" ? styles.tabBtnActive : ""
+                }`}
+                onClick={() => handleScenarioSwitch("hypothetical")}
               >
                 假设情景
               </button>
@@ -767,6 +705,6 @@ function ForexRiskManagement() {
       </div>
     </div>
   );
-}
+};
 
 export default ForexRiskManagement;

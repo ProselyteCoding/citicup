@@ -1,20 +1,261 @@
-.container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 2rem;
-  }
-  
-  .mainContent {
-    background-color: #f9f9f9;
-    padding: 2rem;
+.main-content {
+    padding: 3rem;
+}
+
+.market-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.market-status i {
+    font-size: 0.8rem;
+}
+
+.status-item {
+    background: white;
+    padding: 1rem;
     border-radius: 8px;
-    text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .title {
-    font-size: 3rem;
+    flex: 1;
+}
+
+.status-title {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.status-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.chart-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.control-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    background: white;
+}
+
+.control-btn.active {
+    background: #003366;
+    color: white;
+    border-color: #003366;
+}
+
+.chart-container {
+    width: 100%;
+    height: 400px;
+}
+
+.news-feed {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.news-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.news-filter {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-btn {
+    padding: 0.3rem 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.filter-btn.active {
+    background: #003366;
+    color: white;
+    border-color: #003366;
+}
+
+.event-impact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.impact-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: #eee;
+    flex: 1;
+}
+
+.impact-value {
+    height: 100%;
+    border-radius: 2px;
+}
+
+.impact-high {
+    background: #F44336;
+}
+
+.impact-medium {
+    background: #FFC107;
+}
+
+.impact-low {
+    background: #4CAF50;
+}
+
+.word-cloud {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+}
+
+.event-analysis {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+}
+
+.event-category {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.event-category.monetary {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.event-category.geopolitical {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+.news-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.news-item:last-child {
+    border-bottom: none;
+}
+
+.news-time {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.news-title {
+    margin: 0.5rem 0;
+    font-weight: bold;
+}
+
+.news-sentiment {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.sentiment-positive {
+    background: #e3f7e3;
+    color: #4CAF50;
+}
+
+.sentiment-negative {
+    background: #ffe6e6;
+    color: #F44336;
+}
+
+.risk-signal {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.risk-high {
+    background: #F44336;
+}
+
+.risk-medium {
+    background: #FFC107;
+}
+
+.risk-low {
+    background: #4CAF50;
+}
+
+.currency-selector {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem;
+}
+
+.external-link {
     color: #003366;
-    margin: 0;
-  }
-  
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.external-link:hover {
+    color: #0056b3;
+}
