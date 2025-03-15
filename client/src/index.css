@@ -1,17 +1,29 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --primary-color: #003366;
+  --secondary-color: #004080;
+  --accent-color: #2979ff;
+  --background-color: #f5f7fa;
+  --text-color: #333;
+  --border-color: #e0e6ed;
+  --risk-high: #ff4d4f;
+  --risk-medium: #faad14;
+  --risk-low: #52c41a;
 }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Microsoft YaHei', sans-serif;
+  line-height: 1.6;
+  background-color: #f0f2f5;
+  color: var(--text-color);
+  padding-top: 200px;
+}
+
 
 a {
   font-weight: 500;
@@ -22,13 +34,7 @@ a:hover {
   color: #535bf2;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
+
 
 h1 {
   font-size: 3.2em;
@@ -47,7 +53,7 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #e0e6ed;
 }
 button:focus,
 button:focus-visible {

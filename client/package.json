@@ -13,6 +13,7 @@
     "@fortawesome/fontawesome-free": "^6.7.2",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.3",
+    "echarts-wordcloud": "^2.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0"

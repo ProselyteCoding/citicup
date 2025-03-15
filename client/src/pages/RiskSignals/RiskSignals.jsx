@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as echarts from "echarts";
-import "./RiskSignals.css";
+import NavBar from "../../components/NavBar/NavBar";
+import styles from "./RiskSignals.module.css";
 
 const Dashboard = () => {
-  // 创建各图表的 DOM 引用
+  // 图表 DOM 引用
   const exposurePieRef = useRef(null);
   const riskPathRef = useRef(null);
   const paymentTermRiskRef = useRef(null);
@@ -12,11 +12,27 @@ const Dashboard = () => {
   const riskSignalsRef = useRef(null);
   const backtestRef = useRef(null);
 
+  // 下拉选择控件引用（回测）
+  const currencySelectRef = useRef(null);
+  const timeframeSelectRef = useRef(null);
+
   // 用于存储各图表实例
   const charts = useRef({});
 
-  // 生成日期数据和模拟数据
-  const generateDates = (timeframe) => {
+  // 状态管理
+  const [selectedHighRiskCurrency, setSelectedHighRiskCurrency] = useState("");
+  const [lastUpdateTime, setLastUpdateTime] = useState("--");
+
+  // 模拟数据
+  const currencyPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD"];
+  // 高风险货币列表数据（可扩展）
+  const highRiskCurrencies = [
+    { currency: "EUR/USD", riskLevel: "高风险", exposure: "38%", trend: "up" },
+    { currency: "GBP/USD", riskLevel: "中风险", exposure: "25%", trend: "right" },
+  ];
+
+  // 生成日期数据
+  const generateDates = useCallback((timeframe) => {
     const dates = [];
     const now = new Date();
     let points;
@@ -42,9 +58,10 @@ const Dashboard = () => {
       dates.push(date.toLocaleDateString("zh-CN"));
     }
     return dates;
-  };
+  }, []);
 
-  const generateMockData = (timeframe, multiplier = 1) => {
+  // 生成模拟数据
+  const generateMockData = useCallback((timeframe, multiplier = 1) => {
     const data = [];
     let points;
     switch (timeframe) {
@@ -69,28 +86,20 @@ const Dashboard = () => {
       data.push((value * multiplier).toFixed(4));
     }
     return data;
-  };
+  }, []);
 
-  // 图表渲染函数
-  const renderExposurePie = () => {
+  // 渲染各图表的函数（全部采用箭头函数）
+  const renderExposurePie = useCallback(() => {
     if (!charts.current.exposurePie) {
       charts.current.exposurePie = echarts.init(exposurePieRef.current);
     }
     const option = {
-      title: {
-        text: "货币敞口分布",
-        left: "center",
-      },
-      tooltip: {
-        trigger: "item",
-        formatter: "{a} <br/>{b}: {c}%",
-      },
+      title: { text: "货币敞口分布", left: "center" },
+      tooltip: { trigger: "item", formatter: "{a} <br/>{b}: {c}%" },
       legend: {
         orient: "vertical",
         left: "left",
-        textStyle: {
-          color: "#333",
-        },
+        textStyle: { color: "#333" },
       },
       series: [
         {
@@ -98,25 +107,12 @@ const Dashboard = () => {
           type: "pie",
           radius: ["40%", "70%"],
           avoidLabelOverlap: false,
-          itemStyle: {
-            borderRadius: 0,
-            borderColor: "#fff",
-            borderWidth: 2,
-          },
-          label: {
-            show: false,
-            position: "center",
-          },
+          itemStyle: { borderRadius: 0, borderColor: "#fff", borderWidth: 2 },
+          label: { show: false, position: "center" },
           emphasis: {
-            label: {
-              show: true,
-              fontSize: "20",
-              fontWeight: "bold",
-            },
+            label: { show: true, fontSize: "20", fontWeight: "bold" },
           },
-          labelLine: {
-            show: false,
-          },
+          labelLine: { show: false },
           color: ["#103d7e", "#1a5bb7", "#2979ff", "#5c9cff", "#8ebfff"],
           data: [
             { value: 35, name: "USD" },
@@ -129,198 +125,136 @@ const Dashboard = () => {
       ],
     };
     charts.current.exposurePie.setOption(option);
-  };
+  }, []);
 
-  const renderRiskPath = (selectedCurrency = null) => {
-    if (!charts.current.riskPath) {
-      charts.current.riskPath = echarts.init(riskPathRef.current);
-    }
-    const currencyData = {
-      "EUR/USD": {
-        nodes: [
-          {
-            name: "EUR/USD",
-            riskLevel: "高风险",
-            exposure: "38%",
-            riskIndex: "75",
-          },
-          {
-            name: "JPY",
-            riskLevel: "中风险",
-            exposure: "15%",
-            riskIndex: "55",
-          },
-          {
-            name: "GBP",
-            riskLevel: "低风险",
-            exposure: "20%",
-            riskIndex: "45",
-          },
-        ],
-        links: [
-          { source: "EUR/USD", target: "JPY" },
-          { source: "EUR/USD", target: "GBP" },
-        ],
-      },
-      "GBP/USD": {
-        nodes: [
-          {
-            name: "GBP",
-            riskLevel: "低风险",
-            exposure: "20%",
-            riskIndex: "45",
-          },
-          {
-            name: "JPY",
-            riskLevel: "中风险",
-            exposure: "15%",
-            riskIndex: "55",
-          },
-          {
-            name: "USD",
-            riskLevel: "低风险",
-            exposure: "30%",
-            riskIndex: "35",
-          },
-          {
-            name: "AUD",
-            riskLevel: "低风险",
-            exposure: "10%",
-            riskIndex: "30",
-          },
-        ],
-        links: [
-          { source: "GBP", target: "JPY" },
-          { source: "USD", target: "GBP" },
-          { source: "USD", target: "AUD" },
-        ],
-      },
-    };
-    const defaultData = currencyData["GBP/USD"];
-    const data = selectedCurrency
-      ? currencyData[selectedCurrency]
-      : defaultData;
-    const option = {
-      backgroundColor: "#fff",
-      tooltip: {
-        trigger: "item",
-        backgroundColor: "white",
-        borderColor: "#eee",
-        borderWidth: 1,
-        padding: [10, 15],
-        textStyle: {
-          color: "#666",
-          fontSize: 14,
+  const renderRiskPath = useCallback(
+    (selectedCurrency = "GBP/USD") => {
+      if (!charts.current.riskPath) {
+        charts.current.riskPath = echarts.init(riskPathRef.current);
+      }
+      const currencyData = {
+        "EUR/USD": {
+          nodes: [
+            { name: "EUR/USD", riskLevel: "高风险", exposure: "38%", riskIndex: "75" },
+            { name: "JPY", riskLevel: "中风险", exposure: "15%", riskIndex: "55" },
+            { name: "GBP", riskLevel: "低风险", exposure: "20%", riskIndex: "45" },
+          ],
+          links: [
+            { source: "EUR/USD", target: "JPY" },
+            { source: "EUR/USD", target: "GBP" },
+          ],
         },
-        position: "right",
-        formatter: function (params) {
-          if (params.dataType === "node") {
-            return `<div style="font-family: Microsoft YaHei;">
+        "GBP/USD": {
+          nodes: [
+            { name: "GBP", riskLevel: "低风险", exposure: "20%", riskIndex: "45" },
+            { name: "JPY", riskLevel: "中风险", exposure: "15%", riskIndex: "55" },
+            { name: "USD", riskLevel: "低风险", exposure: "30%", riskIndex: "35" },
+            { name: "AUD", riskLevel: "低风险", exposure: "10%", riskIndex: "30" },
+          ],
+          links: [
+            { source: "GBP", target: "JPY" },
+            { source: "USD", target: "GBP" },
+            { source: "USD", target: "AUD" },
+          ],
+        },
+      };
+      const data = currencyData[selectedCurrency] || currencyData["GBP/USD"];
+      const option = {
+        backgroundColor: "#fff",
+        tooltip: {
+          trigger: "item",
+          backgroundColor: "white",
+          borderColor: "#eee",
+          borderWidth: 1,
+          padding: [10, 15],
+          textStyle: { color: "#666", fontSize: 14 },
+          position: "right",
+          formatter: function (params) {
+            if (params.dataType === "node") {
+              return `<div style="font-family: Microsoft YaHei;">
                         <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">${params.name}</div>
                         <div style="line-height: 1.8;">
-                            风险等级：${params.data.riskLevel}<br/>
-                            敞口比例：${params.data.exposure}<br/>
-                            风险指数：${params.data.riskIndex}
+                          风险等级：${params.data.riskLevel}<br/>
+                          敞口比例：${params.data.exposure}<br/>
+                          风险指数：${params.data.riskIndex}
                         </div>
-                    </div>`;
-          }
-          return "";
+                      </div>`;
+            }
+            return "";
+          },
         },
-      },
-      series: [
-        {
-          type: "graph",
-          layout: "force",
-          force: {
-            repulsion: 300,
-            gravity: 0.1,
-            edgeLength: 120,
-            layoutAnimation: false,
-          },
-          draggable: false,
-          symbolSize: 50,
-          roam: false,
-          label: {
-            show: true,
-            position: "inside",
-            color: "#fff",
-            fontSize: 14,
-            fontWeight: "bold",
-          },
-          itemStyle: {
-            borderWidth: 0,
-          },
-          lineStyle: {
-            color: "#003366",
-            width: 1,
-            opacity: 0.6,
-          },
-          emphasis: {
-            scale: false,
-            itemStyle: {
-              shadowBlur: 10,
-              shadowColor: "rgba(0, 51, 102, 0.3)",
+        series: [
+          {
+            type: "graph",
+            layout: "force",
+            force: {
+              repulsion: 300,
+              gravity: 0.1,
+              edgeLength: 120,
+              layoutAnimation: false,
             },
+            draggable: false,
+            symbolSize: 50,
+            roam: false,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: "bold",
+            },
+            itemStyle: { borderWidth: 0 },
+            lineStyle: { color: "#003366", width: 1, opacity: 0.6 },
+            emphasis: {
+              scale: false,
+              itemStyle: { shadowBlur: 10, shadowColor: "rgba(0, 51, 102, 0.3)" },
+            },
+            edgeSymbol: ["none", "none"],
+            data: data.nodes.map((node) => ({
+              ...node,
+              itemStyle: {
+                color:
+                  node.riskLevel === "高风险"
+                    ? "#ff4d4f"
+                    : node.riskLevel === "中风险"
+                    ? "#faad14"
+                    : node.name === "GBP"
+                    ? "#003366"
+                    : "rgba(0, 51, 102, 0.2)",
+              },
+              symbolSize: node.name === "GBP" ? 60 : 40,
+            })),
+            links: data.links.map((link) => ({
+              ...link,
+              lineStyle: {
+                color:
+                  link.source === "GBP" || link.target === "GBP"
+                    ? "#003366"
+                    : "rgba(0, 51, 102, 0.2)",
+                width: link.source === "GBP" || link.target === "GBP" ? 2 : 1,
+              },
+            })),
           },
-          edgeSymbol: ["none", "none"],
-          data: data.nodes.map((node) => ({
-            ...node,
-            itemStyle: {
-              color:
-                node.riskLevel === "高风险"
-                  ? "#ff4d4f"
-                  : node.riskLevel === "中风险"
-                  ? "#faad14"
-                  : node.name === "GBP"
-                  ? "#003366"
-                  : "rgba(0, 51, 102, 0.2)",
-            },
-            symbolSize: node.name === "GBP" ? 60 : 40,
-          })),
-          links: data.links.map((link) => ({
-            ...link,
-            lineStyle: {
-              color:
-                link.source === "GBP" || link.target === "GBP"
-                  ? "#003366"
-                  : "rgba(0, 51, 102, 0.2)",
-              width: link.source === "GBP" || link.target === "GBP" ? 2 : 1,
-            },
-          })),
-        },
-      ],
-    };
-    charts.current.riskPath.setOption(option, true);
-  };
+        ],
+      };
+      charts.current.riskPath.setOption(option, true);
+    },
+    []
+  );
 
-  const renderPaymentTermRisk = () => {
+  const renderPaymentTermRisk = useCallback(() => {
     if (!charts.current.paymentTermRisk) {
       charts.current.paymentTermRisk = echarts.init(paymentTermRiskRef.current);
     }
     const option = {
-      title: {
-        text: "账期风险分布",
-        left: "center",
-      },
-      tooltip: {
-        trigger: "axis",
-        axisPointer: { type: "shadow" },
-      },
-      grid: {
-        left: "3%",
-        right: "4%",
-        bottom: "3%",
-        containLabel: true,
-      },
+      title: { text: "账期风险分布", left: "center" },
+      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+      grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
       xAxis: {
         type: "category",
         data: ["1-30天", "31-60天", "61-90天", "90天以上"],
       },
-      yAxis: {
-        type: "value",
-        name: "风险指数",
-        max: 100,
-      },
+      yAxis: { type: "value", name: "风险指数", max: 100 },
       series: [
         {
           name: "风险指数",
@@ -332,50 +266,28 @@ const Dashboard = () => {
             { value: 65, itemStyle: { color: "#ff7a45" } },
             { value: 85, itemStyle: { color: "#ff4d4f" } },
           ],
-          label: {
-            show: true,
-            position: "top",
-            formatter: "{c}%",
-          },
+          label: { show: true, position: "top", formatter: "{c}%" },
         },
       ],
     };
     charts.current.paymentTermRisk.setOption(option);
-  };
+  }, []);
 
-  const renderERI = () => {
+  const renderERI = useCallback(() => {
     if (!charts.current.eri) {
       charts.current.eri = echarts.init(eriRef.current);
     }
     const option = {
-      title: {
-        text: "ERI指数趋势",
-        left: "center",
-      },
-      tooltip: {
-        trigger: "axis",
-        axisPointer: { type: "cross" },
-      },
-      legend: {
-        data: ["经济指标", "政策指标", "市场指标", "综合指数"],
-        top: 30,
-      },
-      grid: {
-        left: "3%",
-        right: "4%",
-        bottom: "3%",
-        containLabel: true,
-      },
+      title: { text: "ERI指数趋势", left: "center" },
+      tooltip: { trigger: "axis", axisPointer: { type: "cross" } },
+      legend: { data: ["经济指标", "政策指标", "市场指标", "综合指数"], top: 30 },
+      grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
       xAxis: {
         type: "category",
         boundaryGap: false,
         data: ["1月", "2月", "3月", "4月", "5月", "6月"],
       },
-      yAxis: {
-        type: "value",
-        name: "ERI指数",
-        max: 100,
-      },
+      yAxis: { type: "value", name: "ERI指数", max: 100 },
       series: [
         {
           name: "经济指标",
@@ -412,33 +324,22 @@ const Dashboard = () => {
       ],
     };
     charts.current.eri.setOption(option);
-  };
+  }, []);
 
-  const renderRiskSignals = () => {
+  const renderRiskSignals = useCallback(() => {
     if (!charts.current.riskSignals) {
       charts.current.riskSignals = echarts.init(riskSignalsRef.current);
     }
     const option = {
-      title: {
-        show: false,
-      },
-      tooltip: {
-        trigger: "item",
-      },
-      legend: {
-        orient: "horizontal",
-        bottom: 10,
-        left: "center",
-      },
+      title: { show: false },
+      tooltip: { trigger: "item" },
+      legend: { orient: "horizontal", bottom: 10, left: "center" },
       radar: {
         center: ["50%", "50%"],
         radius: "65%",
         shape: "circle",
         splitNumber: 4,
-        axisName: {
-          color: "#333",
-          fontSize: 12,
-        },
+        axisName: { color: "#333", fontSize: 12 },
         splitArea: {
           areaStyle: {
             color: [
@@ -466,147 +367,98 @@ const Dashboard = () => {
               name: "当前风险",
               symbol: "circle",
               symbolSize: 6,
-              lineStyle: {
-                width: 2,
-                color: "#103d7e",
-              },
-              areaStyle: {
-                color: "rgba(16, 61, 126, 0.3)",
-              },
+              lineStyle: { width: 2, color: "#103d7e" },
+              areaStyle: { color: "rgba(16, 61, 126, 0.3)" },
             },
             {
               value: [60, 60, 60, 60, 60],
               name: "警戒线",
               symbol: "none",
-              lineStyle: {
-                type: "dashed",
-                color: "#ff4d4f",
-              },
-              areaStyle: {
-                color: "rgba(255, 77, 79, 0.1)",
-              },
+              lineStyle: { type: "dashed", color: "#ff4d4f" },
+              areaStyle: { color: "rgba(255, 77, 79, 0.1)" },
             },
           ],
         },
       ],
     };
     charts.current.riskSignals.setOption(option);
-  };
+  }, []);
 
-  const renderBacktest = (currencyPair = "EURUSD", timeframe = "1M") => {
-    if (!charts.current.backtest) {
-      charts.current.backtest = echarts.init(backtestRef.current);
-    }
-    const option = {
-      title: {
-        text: `${currencyPair.slice(0, 3)}/${currencyPair.slice(3)} 回测分析`,
-        left: "center",
-      },
-      tooltip: {
-        trigger: "axis",
-        axisPointer: {
-          type: "cross",
-        },
-      },
-      legend: {
-        data: ["实际汇率", "预测区间上限", "预测区间下限"],
-        top: 30,
-      },
-      grid: {
-        left: "3%",
-        right: "4%",
-        bottom: "3%",
-        containLabel: true,
-      },
-      xAxis: {
-        type: "category",
-        boundaryGap: false,
-        data: generateDates(timeframe),
-      },
-      yAxis: {
-        type: "value",
-        name: "汇率",
-        scale: true,
-      },
-      series: [
-        {
-          name: "实际汇率",
-          type: "line",
-          data: generateMockData(timeframe),
-          symbol: "none",
-          lineStyle: {
-            width: 2,
-            color: "#103d7e",
-          },
-        },
-        {
-          name: "预测区间上限",
-          type: "line",
-          data: generateMockData(timeframe, 1.02),
-          symbol: "none",
-          lineStyle: {
-            width: 1,
-            type: "dashed",
-            color: "#ff4d4f",
-          },
-        },
-        {
-          name: "预测区间下限",
-          type: "line",
-          data: generateMockData(timeframe, 0.98),
-          symbol: "none",
-          lineStyle: {
-            width: 1,
-            type: "dashed",
-            color: "#ff4d4f",
-          },
-          areaStyle: {
-            color: "rgba(255, 77, 79, 0.1)",
-          },
-        },
-      ],
-    };
-    charts.current.backtest.setOption(option);
-  };
-
-  // 更新高风险货币列表点击事件（为表格行添加点击效果）
-  const updateHighRiskCurrencyList = () => {
-    const tbody = document.getElementById("highRiskCurrenciesList");
-    if (tbody) {
-      const rows = tbody.getElementsByTagName("tr");
-      for (let row of rows) {
-        row.style.cursor = "pointer";
-        row.onclick = () => {
-          const currency = row.cells[0].textContent;
-          renderRiskPath(currency);
-          // 高亮选中行
-          for (let r of rows) {
-            r.style.backgroundColor = "";
-          }
-          row.style.backgroundColor = "rgba(0, 51, 102, 0.1)";
-        };
+  const renderBacktest = useCallback(
+    (currencyPair = "EURUSD", timeframe = "1M") => {
+      if (!charts.current.backtest) {
+        charts.current.backtest = echarts.init(backtestRef.current);
       }
-    }
+      const option = {
+        title: {
+          text: `${currencyPair.slice(0, 3)}/${currencyPair.slice(3)} 回测分析`,
+          left: "center",
+        },
+        tooltip: { trigger: "axis", axisPointer: { type: "cross" } },
+        legend: {
+          data: ["实际汇率", "预测区间上限", "预测区间下限"],
+          top: 30,
+        },
+        grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
+        xAxis: {
+          type: "category",
+          boundaryGap: false,
+          data: generateDates(timeframe),
+        },
+        yAxis: { type: "value", name: "汇率", scale: true },
+        series: [
+          {
+            name: "实际汇率",
+            type: "line",
+            data: generateMockData(timeframe),
+            symbol: "none",
+            lineStyle: { width: 2, color: "#103d7e" },
+          },
+          {
+            name: "预测区间上限",
+            type: "line",
+            data: generateMockData(timeframe, 1.02),
+            symbol: "none",
+            lineStyle: { width: 1, type: "dashed", color: "#ff4d4f" },
+          },
+          {
+            name: "预测区间下限",
+            type: "line",
+            data: generateMockData(timeframe, 0.98),
+            symbol: "none",
+            lineStyle: { width: 1, type: "dashed", color: "#ff4d4f" },
+            areaStyle: { color: "rgba(255, 77, 79, 0.1)" },
+          },
+        ],
+      };
+      charts.current.backtest.setOption(option);
+    },
+    [generateDates, generateMockData]
+  );
+
+  // 处理高风险货币列表点击（直接在 JSX 中绑定 onClick）
+  const handleHighRiskClick = (currency) => {
+    setSelectedHighRiskCurrency(currency);
+    renderRiskPath(currency);
   };
 
-  // 更新时间戳
-  const updateLastScanTime = () => {
+  // 更新时间戳（改为 state 控制）
+  const updateLastScanTime = useCallback(() => {
     const now = new Date();
-    const el = document.getElementById("lastUpdateTime");
-    if (el) {
-      el.textContent = now.toLocaleString("zh-CN", {
+    setLastUpdateTime(
+      now.toLocaleString("zh-CN", {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-      });
-    }
-  };
+      })
+    );
+  }, []);
 
-  // 触发风险扫描
-  const triggerRiskScan = () => {
+  // 触发风险扫描（直接在按钮 onClick 中调用）
+  const triggerRiskScan = useCallback(() => {
     alert("正在进行风险DNA扫描...");
     renderExposurePie();
     renderRiskPath();
@@ -615,10 +467,24 @@ const Dashboard = () => {
     renderRiskSignals();
     renderBacktest();
     updateLastScanTime();
-    updateHighRiskCurrencyList();
+  }, [
+    renderExposurePie,
+    renderRiskPath,
+    renderPaymentTermRisk,
+    renderERI,
+    renderRiskSignals,
+    renderBacktest,
+    updateLastScanTime,
+  ]);
+
+  // 处理回测下拉选择变化
+  const handleBacktestChange = () => {
+    const currency = currencySelectRef.current.value;
+    const timeframe = timeframeSelectRef.current.value;
+    renderBacktest(currency, timeframe);
   };
 
-  // 组件挂载后初始化图表、事件监听及窗口resize处理
+  // 初始化图表及绑定 resize 事件
   useEffect(() => {
     renderExposurePie();
     renderRiskPath();
@@ -626,113 +492,66 @@ const Dashboard = () => {
     renderERI();
     renderRiskSignals();
     renderBacktest();
-    updateHighRiskCurrencyList();
     updateLastScanTime();
-
-    // 绑定下拉选择事件
-    const currencySelect = document.getElementById("currencyPairSelect");
-    const timeframeSelect = document.getElementById("timeframeSelect");
-    if (currencySelect && timeframeSelect) {
-      currencySelect.onchange = () =>
-        renderBacktest(currencySelect.value, timeframeSelect.value);
-      timeframeSelect.onchange = () =>
-        renderBacktest(currencySelect.value, timeframeSelect.value);
-    }
-
-    // 绑定扫描按钮事件
-    const manualScan = document.getElementById("manualScan");
-    if (manualScan) {
-      manualScan.onclick = triggerRiskScan;
-    }
-
-    // 窗口大小改变时重绘所有图表
+    // 绑定窗口 resize
     const handleResize = () => {
-      Object.values(charts.current).forEach((chart) => {
-        chart.resize();
-      });
+      Object.values(charts.current).forEach((chart) => chart.resize());
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [
+    renderExposurePie,
+    renderRiskPath,
+    renderPaymentTermRisk,
+    renderERI,
+    renderRiskSignals,
+    renderBacktest,
+    updateLastScanTime,
+  ]);
 
   return (
     <div>
-      <nav className="navbar">
-        <div className="nav-top">
-          <div className="logo">RiskFX</div>
-          <div style={{ color: "white" }}>
-            <span className="market-status">
-              <span class="market-status">
-                <i class="fas fa-circle"></i> 市场开放中
-              </span>
-            </span>
-          </div>
-        </div>
-        <div className="nav-modules">
-          <div className="nav-module">
-            <Link to="/">
-              <i className="fas fa-globe"></i>
-              <h3>外汇市场情况</h3>
-              <p>实时汇率与市场动态</p>
-            </Link>
-          </div>
-          <div className="nav-module">
-            <Link to="/RiskSignals">
-              <i className="fas fa-exclamation-triangle"></i>
-              <h3>风险信号可视化</h3>
-              <p>风险预警与监控</p>
-            </Link>
-          </div>
-          <div className="nav-module">
-            <i className="fas fa-lightbulb"></i>
-            <h3>"一键式"企业决策</h3>
-            <p>智能建议与执行</p>
-          </div>
-          <div className="nav-module">
-            <i className="fas fa-file-download"></i>
-            <h3>报告下载</h3>
-            <p>分析报告与数据导出</p>
-          </div>
-        </div>
-      </nav>
-
+      <NavBar />
       {/* 主体内容 */}
-      <div className="container">
-        <div className="main-content">
-          <div className="dashboard" id="riskDashboard">
-            <div className="dashboard-header">
+      <div className={styles.container}>
+        <div className={styles["main-content"]}>
+          <div className={styles.dashboard} id="riskDashboard">
+            <div className={styles["dashboard-header"]}>
               <h2>风险DNA扫描</h2>
-              <div className="actions">
-                <button id="manualScan" className="primary-button">
+              <div className={styles.actions}>
+                <button
+                  onClick={triggerRiskScan}
+                  className={styles["primary-button"]}
+                >
                   <i className="fas fa-sync"></i>
                   <span>立即扫描</span>
                 </button>
-                <span className="last-update">
-                  上次更新：<span id="lastUpdateTime">--</span>
+                <span className={styles["last-update"]}>
+                  上次更新：<span>{lastUpdateTime}</span>
                 </span>
               </div>
             </div>
 
-            <div className="dashboard-grid">
+            <div className={styles["dashboard-grid"]}>
               {/* 货币敞口分布 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>货币敞口分布</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="exposure-pie"
                   ref={exposurePieRef}
                 ></div>
               </div>
 
               {/* 高风险货币列表 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>高风险货币列表</h3>
                 </div>
-                <div className="list-container">
-                  <table className="risk-table">
+                <div className={styles["list-container"]}>
+                  <table className={styles["risk-table"]}>
                     <thead>
                       <tr>
                         <th>货币</th>
@@ -741,100 +560,113 @@ const Dashboard = () => {
                         <th>趋势</th>
                       </tr>
                     </thead>
-                    <tbody id="highRiskCurrenciesList">
-                      <tr>
-                        <td>EUR/USD</td>
-                        <td>
-                          <span className="risk-level risk-high">高风险</span>
-                        </td>
-                        <td>38%</td>
-                        <td>
-                          <i
-                            className="fas fa-arrow-up"
-                            style={{ color: "#ff4d4f" }}
-                          ></i>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>GBP/USD</td>
-                        <td>
-                          <span className="risk-level risk-medium">中风险</span>
-                        </td>
-                        <td>25%</td>
-                        <td>
-                          <i
-                            className="fas fa-arrow-right"
-                            style={{ color: "#faad14" }}
-                          ></i>
-                        </td>
-                      </tr>
+                    <tbody>
+                      {highRiskCurrencies.map((item) => (
+                        <tr
+                          key={item.currency}
+                          onClick={() => handleHighRiskClick(item.currency)}
+                          style={{
+                            cursor: "pointer",
+                            backgroundColor:
+                              selectedHighRiskCurrency === item.currency
+                                ? "rgba(0, 51, 102, 0.1)"
+                                : "transparent",
+                          }}
+                        >
+                          <td>{item.currency}</td>
+                          <td>
+                            <span
+                              className={`${styles["risk-level"]} ${
+                                item.riskLevel === "高风险"
+                                  ? styles["risk-high"]
+                                  : styles["risk-medium"]
+                              }`}
+                            >
+                              {item.riskLevel}
+                            </span>
+                          </td>
+                          <td>{item.exposure}</td>
+                          <td>
+                            {item.trend === "up" ? (
+                              <i className="fas fa-arrow-up" style={{ color: "#ff4d4f" }}></i>
+                            ) : (
+                              <i className="fas fa-arrow-right" style={{ color: "#faad14" }}></i>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
               </div>
 
               {/* 账期风险分布 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>账期风险分布</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="paymentTermRiskChart"
                   ref={paymentTermRiskRef}
                 ></div>
               </div>
 
               {/* 风险传导路径 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>风险传导路径</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="risk-path"
                   ref={riskPathRef}
                 ></div>
               </div>
 
               {/* ERI指数 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>宏观风险指数 (ERI)</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="eriChart"
                   ref={eriRef}
                 ></div>
               </div>
 
               {/* 风险信号分析 */}
-              <div className="dashboard-card">
-                <div className="card-header">
+              <div className={styles["dashboard-card"]}>
+                <div className={styles["card-header"]}>
                   <h3>风险信号分析</h3>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="riskSignalsChart"
                   ref={riskSignalsRef}
                 ></div>
               </div>
 
               {/* 单一货币对回测分析 */}
-              <div className="dashboard-card full-width">
-                <div className="card-header">
+              <div className={`${styles["dashboard-card"]} ${styles["full-width"]}`}>
+                <div className={styles["card-header"]}>
                   <h3>单一货币对回测分析</h3>
                   <div style={{ marginTop: "10px" }}>
                     <select
-                      id="currencyPairSelect"
+                      ref={currencySelectRef}
+                      onChange={handleBacktestChange}
                       style={{ padding: "5px", marginRight: "10px" }}
                     >
                       <option value="EURUSD">EUR/USD</option>
                       <option value="GBPUSD">GBP/USD</option>
                       <option value="USDJPY">USD/JPY</option>
                     </select>
-                    <select id="timeframeSelect" style={{ padding: "5px" }}>
+                    <select
+                      ref={timeframeSelectRef}
+                      onChange={handleBacktestChange}
+                      style={{ padding: "5px" }}
+                    >
                       <option value="1M">1个月</option>
                       <option value="3M">3个月</option>
                       <option value="6M">6个月</option>
@@ -843,7 +675,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div
-                  className="chart-container"
+                  className={styles["chart-container"]}
                   id="backtestChart"
                   style={{ height: "400px" }}
                   ref={backtestRef}
