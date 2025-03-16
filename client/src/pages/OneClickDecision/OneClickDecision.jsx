@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
 import NavBar from "../../components/NavBar/NavBar";
 import styles from "./OneClickDecision.module.css";
+import Papa from "papaparse";
 
 const ForexRiskManagement = () => {
   // 图表容器 DOM 引用
@@ -200,7 +201,14 @@ const ForexRiskManagement = () => {
       },
       xAxis: {
         type: "category",
-        data: ["2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06"],
+        data: [
+          "2024-01",
+          "2024-02",
+          "2024-03",
+          "2024-04",
+          "2024-05",
+          "2024-06",
+        ],
         boundaryGap: false,
       },
       yAxis: {
@@ -239,28 +247,46 @@ const ForexRiskManagement = () => {
     // 此处可根据情景切换加载不同数据或图表配置
   };
 
-  // 文件上传处理（使用箭头函数与 useRef）
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       setFileInfo(`已选择: ${file.name}`);
       const reader = new FileReader();
       reader.onload = (e) => {
-        processPortfolioData(e.target.result);
+        const csvData = e.target.result;
+        processCSVData(csvData); // 解析 CSV 数据
       };
       reader.readAsText(file);
     }
   };
 
-  // 处理文件数据
-  const processPortfolioData = (data) => {
-    try {
-      updatePortfolioDisplay();
-      alert("持仓数据已成功更新！");
-    } catch (error) {
-      alert("数据处理出错，请检查文件格式是否正确。");
-    }
+  const processCSVData = (csvData) => {
+    Papa.parse(csvData, {
+      complete: (result) => {
+        console.log("CSV解析结果：", result.data);
+  
+        // 数据类型转换
+        const formattedData = result.data.map(item => ({
+          benefit: parseFloat(item.benefit),  // 转换为数字
+          beta: parseFloat(item.beta),  // 转换为数字
+          currency: item.currency,  // 货币对保持为字符串
+          dailyVolatility: parseFloat(item.dailyVolatility),  // 转换为数字
+          hedgingCost: parseFloat(item.hedgingCost),  // 转换为数字
+          proportion: parseFloat(item.proportion),  // 转换为数字
+          quantity: parseInt(item.quantity),  // 转换为整数
+          valueAtRisk: item.valueAtRisk,  // 保持为字符串，不进行处理
+        }));
+  
+        // 打印已格式化的数据
+        console.log("格式化后的数据：", formattedData);
+        // 补充发往后端的代码
+      },
+      header: true, // 如果 CSV 中包含表头，设置 header: true 来自动解析
+    });
   };
+  
+  
+
 
   // 更新持仓展示（此处仅为占位，可根据需求补充逻辑）
   const updatePortfolioDisplay = () => {
@@ -280,7 +306,9 @@ const ForexRiskManagement = () => {
       renderHedgingChart();
     }
     if (stressTestChartRef.current) {
-      stressTestChartInstance.current = echarts.init(stressTestChartRef.current);
+      stressTestChartInstance.current = echarts.init(
+        stressTestChartRef.current
+      );
       renderStressTestChart();
     }
     if (backtestChartRef.current) {
@@ -315,13 +343,15 @@ const ForexRiskManagement = () => {
               <input
                 type="file"
                 ref={fileInputRef}
-                accept=".csv,.xlsx"
+                accept=".csv"
                 style={{ display: "none" }}
                 onChange={handleFileUpload}
               />
               <button
                 className={styles.uploadBtn}
-                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                onClick={() =>
+                  fileInputRef.current && fileInputRef.current.click()
+                }
               >
                 <i className="fas fa-upload"></i> 上传持仓数据
               </button>
@@ -425,7 +455,9 @@ const ForexRiskManagement = () => {
               <span className={styles.currencyTag}>EUR: 短头寸</span>
               <span className={styles.currencyTag}>JPY: 中性</span>
             </p>
-            <p style={{ color: "#666", fontSize: "0.9rem", marginTop: "0.5rem" }}>
+            <p
+              style={{ color: "#666", fontSize: "0.9rem", marginTop: "0.5rem" }}
+            >
               当前组合在USD方向上呈现较大敞口，建议通过EUR/USD和GBP/USD对冲降低美元敞口。日元方向保持中性，可作为对冲工具。
             </p>
           </div>
@@ -471,7 +503,9 @@ const ForexRiskManagement = () => {
                       <td>美联储加息100bp</td>
                       <td className={styles.negative}>-$85,000</td>
                       <td>
-                        <span className={`${styles.riskLevel} ${styles.riskHigh}`}>
+                        <span
+                          className={`${styles.riskLevel} ${styles.riskHigh}`}
+                        >
                           高
                         </span>
                       </td>
@@ -482,7 +516,9 @@ const ForexRiskManagement = () => {
                       <td>欧债危机恶化</td>
                       <td className={styles.negative}>-$62,000</td>
                       <td>
-                        <span className={`${styles.riskLevel} ${styles.riskMedium}`}>
+                        <span
+                          className={`${styles.riskLevel} ${styles.riskMedium}`}
+                        >
                           中
                         </span>
                       </td>
@@ -493,7 +529,9 @@ const ForexRiskManagement = () => {
                       <td>英国脱欧影响</td>
                       <td className={styles.negative}>-$45,000</td>
                       <td>
-                        <span className={`${styles.riskLevel} ${styles.riskMedium}`}>
+                        <span
+                          className={`${styles.riskLevel} ${styles.riskMedium}`}
+                        >
                           中
                         </span>
                       </td>
