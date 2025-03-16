@@ -13,7 +13,7 @@ json数据格式：
 ```json
 [
   {
-    "currency": "USD",         // 货币对 string
+    "currency": "USD/JPY",     // 货币对 string
     "quantity": 10000,         // 持仓量 number
     "proportion": 0.5,         // 持仓占比 number
     "benefit": -1000,          // 盈亏 number（修正冒号为英文符号）
@@ -42,6 +42,7 @@ json数据格式：
 
 ```json
 {
+    scenario:"爆发新一轮全球经济危机" // 压力测试情景描述 string
     influence: "高", // 影响程度 string 高/中/低
     probability: 0.01, // 发生概率 number
     suggestion: "减少EUR敞口" // 建议措施 string
