@@ -264,21 +264,6 @@ const ForexRiskManagement = () => {
     Papa.parse(csvData, {
       complete: (result) => {
         console.log("CSV解析结果：", result.data);
-  
-        // 数据类型转换
-        const formattedData = result.data.map(item => ({
-          benefit: parseFloat(item.benefit),  // 转换为数字
-          beta: parseFloat(item.beta),  // 转换为数字
-          currency: item.currency,  // 货币对保持为字符串
-          dailyVolatility: parseFloat(item.dailyVolatility),  // 转换为数字
-          hedgingCost: parseFloat(item.hedgingCost),  // 转换为数字
-          proportion: parseFloat(item.proportion),  // 转换为数字
-          quantity: parseInt(item.quantity),  // 转换为整数
-          valueAtRisk: item.valueAtRisk,  // 保持为字符串，不进行处理
-        }));
-  
-        // 打印已格式化的数据
-        console.log("格式化后的数据：", formattedData);
         // 补充发往后端的代码
       },
       header: true, // 如果 CSV 中包含表头，设置 header: true 来自动解析
