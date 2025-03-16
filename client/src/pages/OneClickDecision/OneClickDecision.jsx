@@ -2,22 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
 import NavBar from "../../components/NavBar/NavBar";
 import styles from "./OneClickDecision.module.css";
-import Papa from "papaparse";
+import CSVHandler from "../../components/csvHandler/csvHandler"; // 根据实际路径导入新组件
 
 const ForexRiskManagement = () => {
   // 图表容器 DOM 引用
   const hedgingChartRef = useRef(null);
   const stressTestChartRef = useRef(null);
   const backtestChartRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   // ECharts 实例引用
   const hedgingChartInstance = useRef(null);
   const stressTestChartInstance = useRef(null);
   const backtestChartInstance = useRef(null);
 
-  // 文件名状态
-  const [fileInfo, setFileInfo] = useState("");
   // 压力测试情景状态
   const [scenario, setScenario] = useState("historical");
 
@@ -247,43 +244,6 @@ const ForexRiskManagement = () => {
     // 此处可根据情景切换加载不同数据或图表配置
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setFileInfo(`已选择: ${file.name}`);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const csvData = e.target.result;
-        processCSVData(csvData); // 解析 CSV 数据
-      };
-      reader.readAsText(file);
-    }
-  };
-
-  const processCSVData = (csvData) => {
-    Papa.parse(csvData, {
-      complete: (result) => {
-        console.log("CSV解析结果：", result.data);
-        // 补充发往后端的代码
-      },
-      header: true, // 如果 CSV 中包含表头，设置 header: true 来自动解析
-    });
-  };
-  
-  
-
-
-  // 更新持仓展示（此处仅为占位，可根据需求补充逻辑）
-  const updatePortfolioDisplay = () => {
-    // 添加更新图表和表格的逻辑
-  };
-
-  // 刷新数据
-  const refreshPortfolioData = () => {
-    alert("正在刷新数据...");
-    // 添加从后端获取最新数据的逻辑
-  };
-
   // 初始化图表与监听窗口大小变化
   useEffect(() => {
     if (hedgingChartRef.current) {
@@ -291,9 +251,7 @@ const ForexRiskManagement = () => {
       renderHedgingChart();
     }
     if (stressTestChartRef.current) {
-      stressTestChartInstance.current = echarts.init(
-        stressTestChartRef.current
-      );
+      stressTestChartInstance.current = echarts.init(stressTestChartRef.current);
       renderStressTestChart();
     }
     if (backtestChartRef.current) {
@@ -315,6 +273,12 @@ const ForexRiskManagement = () => {
     // eslint-disable-next-line
   }, []);
 
+  // 刷新数据
+  const refreshPortfolioData = () => {
+    alert("正在刷新数据...");
+    // 添加从后端获取最新数据的逻辑
+  };
+
   return (
     <div>
       <NavBar />
@@ -325,30 +289,14 @@ const ForexRiskManagement = () => {
           <div className={styles.portfolioHeader}>
             <h2>多币种敞口分析</h2>
             <div className={styles.uploadSection}>
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept=".csv"
-                style={{ display: "none" }}
-                onChange={handleFileUpload}
-              />
-              <button
-                className={styles.uploadBtn}
-                onClick={() =>
-                  fileInputRef.current && fileInputRef.current.click()
-                }
-              >
-                <i className="fas fa-upload"></i> 上传持仓数据
-              </button>
+              {/* 使用 CSVHandler 组件替换原有文件上传与解析逻辑 */}
+              <CSVHandler />
               <button
                 className={styles.refreshBtn}
                 onClick={refreshPortfolioData}
               >
                 <i className="fas fa-sync-alt"></i> 刷新数据
               </button>
-              <span className={styles.fileInfo} id="fileInfo">
-                {fileInfo}
-              </span>
             </div>
           </div>
           <div className={styles.portfolioStats}>

@@ -70,3 +70,11 @@
 .marketStatus {
   color: #2ecc71;
 }
+
+
+
+
+.active {
+  transform: none;
+  background: rgba(255, 255, 255, 0.6); 
+}
