@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
 import NavBar from "../../components/NavBar/NavBar";
 import styles from "./OneClickDecision.module.css";
-import CSVHandler from "../../components/csvHandler/csvHandler"; // 根据实际路径导入新组件
+import CSVHandler from "../../components/csvHandler/csvHandler";
 
 const ForexRiskManagement = () => {
   // 图表容器 DOM 引用
@@ -244,6 +244,14 @@ const ForexRiskManagement = () => {
     // 此处可根据情景切换加载不同数据或图表配置
   };
 
+  // 新增状态：保存从 CSVHandler 获取的持仓数据
+  const [portfolioData, setPortfolioData] = useState([]);
+
+  // CSVHandler 成功解析数据后的回调
+  const handleCSVData = (data) => {
+    setPortfolioData(data);
+  };
+
   // 初始化图表与监听窗口大小变化
   useEffect(() => {
     if (hedgingChartRef.current) {
@@ -289,12 +297,9 @@ const ForexRiskManagement = () => {
           <div className={styles.portfolioHeader}>
             <h2>多币种敞口分析</h2>
             <div className={styles.uploadSection}>
-              {/* 使用 CSVHandler 组件替换原有文件上传与解析逻辑 */}
-              <CSVHandler />
-              <button
-                className={styles.refreshBtn}
-                onClick={refreshPortfolioData}
-              >
+              {/* 使用 CSVHandler 组件，并传入回调 */}
+              <CSVHandler onDataParsed={handleCSVData} />
+              <button className={styles.refreshBtn} onClick={refreshPortfolioData}>
                 <i className="fas fa-sync-alt"></i> 刷新数据
               </button>
             </div>
@@ -328,56 +333,24 @@ const ForexRiskManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>EUR/USD</td>
-                  <td>1,000,000</td>
-                  <td>17.2%</td>
-                  <td className={styles.positive}>+2,500</td>
-                  <td>12.5%</td>
-                  <td>$15,000</td>
-                  <td>1.2</td>
-                  <td>0.15%</td>
-                </tr>
-                <tr>
-                  <td>GBP/USD</td>
-                  <td>800,000</td>
-                  <td>13.8%</td>
-                  <td className={styles.positive}>+1,800</td>
-                  <td>11.2%</td>
-                  <td>$12,000</td>
-                  <td>1.1</td>
-                  <td>0.18%</td>
-                </tr>
-                <tr>
-                  <td>USD/JPY</td>
-                  <td>2,000,000</td>
-                  <td>34.5%</td>
-                  <td className={styles.negative}>-1,200</td>
-                  <td>8.5%</td>
-                  <td>$25,000</td>
-                  <td>0.9</td>
-                  <td>0.12%</td>
-                </tr>
-                <tr>
-                  <td>USD/CHF</td>
-                  <td>500,000</td>
-                  <td>8.6%</td>
-                  <td className={styles.positive}>+950</td>
-                  <td>7.8%</td>
-                  <td>$8,000</td>
-                  <td>0.8</td>
-                  <td>0.14%</td>
-                </tr>
-                <tr>
-                  <td>AUD/USD</td>
-                  <td>1,500,000</td>
-                  <td>25.9%</td>
-                  <td className={styles.negative}>-800</td>
-                  <td>13.2%</td>
-                  <td>$18,000</td>
-                  <td>1.3</td>
-                  <td>0.16%</td>
-                </tr>
+                {portfolioData.length > 0 ? (
+                  portfolioData.map((row, index) => (
+                    <tr key={index}>
+                      <td>{row.currency}</td>
+                      <td>{row.quantity}</td>
+                      <td>{row.proportion}</td>
+                      <td>{row.benefit}</td>
+                      <td>{row.dailyVolatility}</td>
+                      <td>{row.valueAtRisk}</td>
+                      <td>{row.beta}</td>
+                      <td>{row.hedgingCost}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8">请上传 CSV 数据</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -388,9 +361,7 @@ const ForexRiskManagement = () => {
               <span className={styles.currencyTag}>EUR: 短头寸</span>
               <span className={styles.currencyTag}>JPY: 中性</span>
             </p>
-            <p
-              style={{ color: "#666", fontSize: "0.9rem", marginTop: "0.5rem" }}
-            >
+            <p style={{ color: "#666", fontSize: "0.9rem", marginTop: "0.5rem" }}>
               当前组合在USD方向上呈现较大敞口，建议通过EUR/USD和GBP/USD对冲降低美元敞口。日元方向保持中性，可作为对冲工具。
             </p>
           </div>
@@ -402,17 +373,13 @@ const ForexRiskManagement = () => {
           <div className={styles.stressTestScenarios}>
             <div className={styles.scenarioTabs}>
               <button
-                className={`${styles.tabBtn} ${
-                  scenario === "historical" ? styles.tabBtnActive : ""
-                }`}
+                className={`${styles.tabBtn} ${scenario === "historical" ? styles.tabBtnActive : ""}`}
                 onClick={() => handleScenarioSwitch("historical")}
               >
                 历史情景
               </button>
               <button
-                className={`${styles.tabBtn} ${
-                  scenario === "hypothetical" ? styles.tabBtnActive : ""
-                }`}
+                className={`${styles.tabBtn} ${scenario === "hypothetical" ? styles.tabBtnActive : ""}`}
                 onClick={() => handleScenarioSwitch("hypothetical")}
               >
                 假设情景
@@ -436,9 +403,7 @@ const ForexRiskManagement = () => {
                       <td>美联储加息100bp</td>
                       <td className={styles.negative}>-$85,000</td>
                       <td>
-                        <span
-                          className={`${styles.riskLevel} ${styles.riskHigh}`}
-                        >
+                        <span className={`${styles.riskLevel} ${styles.riskHigh}`}>
                           高
                         </span>
                       </td>
@@ -449,9 +414,7 @@ const ForexRiskManagement = () => {
                       <td>欧债危机恶化</td>
                       <td className={styles.negative}>-$62,000</td>
                       <td>
-                        <span
-                          className={`${styles.riskLevel} ${styles.riskMedium}`}
-                        >
+                        <span className={`${styles.riskLevel} ${styles.riskMedium}`}>
                           中
                         </span>
                       </td>
@@ -462,9 +425,7 @@ const ForexRiskManagement = () => {
                       <td>英国脱欧影响</td>
                       <td className={styles.negative}>-$45,000</td>
                       <td>
-                        <span
-                          className={`${styles.riskLevel} ${styles.riskMedium}`}
-                        >
+                        <span className={`${styles.riskLevel} ${styles.riskMedium}`}>
                           中
                         </span>
                       </td>
@@ -474,11 +435,7 @@ const ForexRiskManagement = () => {
                   </tbody>
                 </table>
               </div>
-              <div
-                className={styles.chartContainer}
-                ref={stressTestChartRef}
-                id="stress-test-chart"
-              >
+              <div className={styles.chartContainer} ref={stressTestChartRef} id="stress-test-chart">
                 {/* 压力测试图表将在这里渲染 */}
               </div>
             </div>
@@ -488,17 +445,13 @@ const ForexRiskManagement = () => {
             <div className={styles.summaryGrid}>
               <div className={styles.summaryCard}>
                 <div className={styles.summaryTitle}>最大潜在损失</div>
-                <div className={`${styles.summaryValue} ${styles.negative}`}>
-                  $85,000
-                </div>
+                <div className={`${styles.summaryValue} ${styles.negative}`}>$85,000</div>
                 <div className={styles.summaryDesc}>在美联储大幅加息情景下</div>
               </div>
               <div className={styles.summaryCard}>
                 <div className={styles.summaryTitle}>风险承受能力</div>
                 <div className={styles.summaryValue}>充足</div>
-                <div className={styles.summaryDesc}>
-                  当前资本金可覆盖压力情景
-                </div>
+                <div className={styles.summaryDesc}>当前资本金可覆盖压力情景</div>
               </div>
               <div className={styles.summaryCard}>
                 <div className={styles.summaryTitle}>建议对冲比例</div>
@@ -530,15 +483,11 @@ const ForexRiskManagement = () => {
           <div className={styles.backtestMetrics}>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>累计收益率</div>
-              <div className={`${styles.metricValue} ${styles.positive}`}>
-                +15.8%
-              </div>
+              <div className={`${styles.metricValue} ${styles.positive}`}>+15.8%</div>
             </div>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>最大回撤</div>
-              <div className={`${styles.metricValue} ${styles.negative}`}>
-                -8.5%
-              </div>
+              <div className={`${styles.metricValue} ${styles.negative}`}>-8.5%</div>
             </div>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>胜率</div>
@@ -549,11 +498,7 @@ const ForexRiskManagement = () => {
               <div className={styles.metricValue}>1.86</div>
             </div>
           </div>
-          <div
-            className={styles.chartContainer}
-            ref={backtestChartRef}
-            id="backtest-chart"
-          >
+          <div className={styles.chartContainer} ref={backtestChartRef} id="backtest-chart">
             {/* 回测结果图表将在这里渲染 */}
           </div>
           <table className={styles.matrix}>
@@ -622,9 +567,7 @@ const ForexRiskManagement = () => {
                 <h4>头寸风险评估</h4>
                 <div className={styles.indicator}>
                   <span className={styles.indicatorLabel}>当前风险敞口</span>
-                  <span className={`${styles.riskLevel} ${styles.riskHigh}`}>
-                    高风险
-                  </span>
+                  <span className={`${styles.riskLevel} ${styles.riskHigh}`}>高风险</span>
                 </div>
                 <div className={styles.indicator}>
                   <span className={styles.indicatorLabel}>VaR(95%)</span>
@@ -640,13 +583,9 @@ const ForexRiskManagement = () => {
                 </div>
                 <div className={styles.indicator}>
                   <span className={styles.indicatorLabel}>对冲效果预估</span>
-                  <span className={`${styles.riskLevel} ${styles.riskMedium}`}>
-                    中等
-                  </span>
+                  <span className={`${styles.riskLevel} ${styles.riskMedium}`}>中等</span>
                 </div>
-                <p>
-                  当前EUR/USD与GBP/USD呈强正相关，建议选择负相关货币对进行对冲。
-                </p>
+                <p>当前EUR/USD与GBP/USD呈强正相关，建议选择负相关货币对进行对冲。</p>
               </div>
               <div className={styles.analysisCard}>
                 <h4>成本效益分析</h4>
@@ -656,18 +595,12 @@ const ForexRiskManagement = () => {
                 </div>
                 <div className={styles.indicator}>
                   <span className={styles.indicatorLabel}>收益率影响</span>
-                  <span className={`${styles.riskLevel} ${styles.riskLow}`}>
-                    低影响
-                  </span>
+                  <span className={`${styles.riskLevel} ${styles.riskLow}`}>低影响</span>
                 </div>
                 <p>当前对冲成本相对较低，建议进行策略性对冲。</p>
               </div>
             </div>
-            <div
-              className={styles.chartContainer}
-              ref={hedgingChartRef}
-              id="hedging-chart"
-            >
+            <div className={styles.chartContainer} ref={hedgingChartRef} id="hedging-chart">
               {/* 对冲建议图表将在这里渲染 */}
             </div>
             <button className={styles.button}>执行对冲策略</button>
