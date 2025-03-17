@@ -88,15 +88,57 @@ PORT=3000 npm start
 ```
 
 - **响应：**
-
+类似于下面的数据格式
 ```json
 {
   "success": true,
   "message": "持仓数据上传成功",
   "data": {
-    "totalValue": 5800000,
-    "portfolioVolatility": 0.085,
-    "sharpeRatio": 1.25
+    "totalValue": "10,250000",
+    "portfolioVolatility": 0.07,
+    "sharpeRatio": 1.58,
+    "portfolio": [
+      {
+        "currency": "EUR/USD",
+        "quantity": 15000,
+        "proportion": 0.25,
+        "benefit": 2000,
+        "dailyVolatility": 0.1,
+        "valueAtRisk": "$8,000",
+        "beta": 1.3,
+        "hedgingCost": 0.002
+      },
+      {
+        "currency": "GBP/USD",
+        "quantity": 12000,
+        "proportion": 0.2,
+        "benefit": -500,
+        "dailyVolatility": 0.15,
+        "valueAtRisk": "$5,000",
+        "beta": 1.1,
+        "hedgingCost": 0.0018
+      },
+      {
+        "currency": "AUD/USD",
+        "quantity": 8000,
+        "proportion": 0.15,
+        "benefit": 1500,
+        "dailyVolatility": 0.12,
+        "valueAtRisk": "$6,000",
+        "beta": 1.05,
+        "hedgingCost": 0.0013
+      },
+      {
+        "currency": "USD/JPY",
+        "quantity": 10000,
+        "proportion": 0.4,
+        "benefit": 3000,
+        "dailyVolatility": 0.09,
+        "valueAtRisk": "$12,000",
+        "beta": 1.2,
+        "hedgingCost": 0.0025
+      }
+    ]
   }
 }
 ```
