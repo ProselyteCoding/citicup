@@ -43,7 +43,7 @@ const CSVHandler = () => {
           "dailyVolatility",
           "valueAtRisk",
           "beta",
-          "hedgingCost"
+          "hedgingCost",
         ];
 
         // 验证表头顺序是否符合预期
@@ -54,7 +54,9 @@ const CSVHandler = () => {
           console.error(
             `CSV表头顺序错误，期望顺序为: ${expectedFields.join(
               ", "
-            )}，但实际为: ${result.meta.fields ? result.meta.fields.join(", ") : "无表头"}`
+            )}，但实际为: ${
+              result.meta.fields ? result.meta.fields.join(", ") : "无表头"
+            }`
           );
           // 清空文件输入框，提示用户重新上传正确格式的文件
           if (fileInputRef.current) {
@@ -109,7 +111,8 @@ const CSVHandler = () => {
           }
           return;
         } else {
-          console.log("验证后的 CSV 数据：", validatedData);
+          // 测试当前
+          console.log(JSON.stringify(validatedData, null, 2));  
           // 此处可以添加将 validatedData 发送给后端的逻辑
         }
       },
