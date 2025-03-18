@@ -1,0 +1,5 @@
+currency,quantity,rate,currentPrice,openPrice,dailyVolatility
+EUR/USD,1000000,1.08,1.085,1.08,0.125
+GBP/USD,500000,1.35,1.355,1.34,0.15
+USD/JPY,2000000,110.5,111.0,110.3,0.12
+AUD/USD,750000,0.74,0.745,0.73,0.10
