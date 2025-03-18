@@ -2,8 +2,18 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as echarts from "echarts";
 import NavBar from "../../components/NavBar/NavBar";
 import styles from "./RiskSignals.module.css";
+import { useStore } from "../../../store"; // 导入 zustand store
 
 const Dashboard = () => {
+  // 从全局状态中获取 transformedData 和 analysis
+  const { transformedData} = useStore();
+  console.log("从 zustand 获取的数据:", transformedData);
+  
+
+
+
+
+
   // 图表 DOM 引用
   const exposurePieRef = useRef(null);
   const riskPathRef = useRef(null);
@@ -88,7 +98,7 @@ const Dashboard = () => {
     return data;
   }, []);
 
-  // 渲染各图表的函数（全部采用箭头函数）
+  // 渲染各图表的函数
   const renderExposurePie = useCallback(() => {
     if (!charts.current.exposurePie) {
       charts.current.exposurePie = echarts.init(exposurePieRef.current);

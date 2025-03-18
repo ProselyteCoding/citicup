@@ -4,8 +4,12 @@ import NavBar from "../../components/NavBar/NavBar";
 import styles from "./OneClickDecision.module.css";
 import CSVHandler from "../../components/csvHandler/csvHandler";
 import Loading from "../../components/Loading";
+import { useStore } from "../../../store"; // 从 zustand 中读取数据
 
 const ForexRiskManagement = () => {
+  // 从全局状态中获取解析后的持仓数据和测试数据
+  const { transformedData, analysis } = useStore();
+
   // 图表容器 DOM 引用
   const hedgingChartRef = useRef(null);
   const stressTestChartRef = useRef(null);
@@ -245,28 +249,19 @@ const ForexRiskManagement = () => {
     // 此处可根据情景切换加载不同数据或图表配置
   };
 
-  // 新增状态：保存从 CSVHandler 获取的持仓数据（portfolio 为一个数组）
-  const [portfolio, setPortfolio] = useState([]);
-  const [analysis, setAnalysis] = useState([]);
-
-  // CSVHandler 成功解析数据后的回调
-  const handleCSVData = (data) => {
-    console.log("Received data:", data);
-    setPortfolio(data.transformedData);
-    // 确保数据格式正确
-    setAnalysis(data.analysis);
+  // 刷新数据（可添加从后端获取最新数据的逻辑）
+  const refreshPortfolioData = () => {
+    alert("正在刷新数据...");
   };
 
-  // 初始化图表与监听窗口大小变化
+  // 初始化图表及监听窗口大小变化
   useEffect(() => {
     if (hedgingChartRef.current) {
       hedgingChartInstance.current = echarts.init(hedgingChartRef.current);
       renderHedgingChart();
     }
     if (stressTestChartRef.current) {
-      stressTestChartInstance.current = echarts.init(
-        stressTestChartRef.current
-      );
+      stressTestChartInstance.current = echarts.init(stressTestChartRef.current);
       renderStressTestChart();
     }
     if (backtestChartRef.current) {
@@ -288,28 +283,18 @@ const ForexRiskManagement = () => {
     // eslint-disable-next-line
   }, []);
 
-  // 刷新数据
-  const refreshPortfolioData = () => {
-    alert("正在刷新数据...");
-    // 添加从后端获取最新数据的逻辑
-  };
-
   return (
     <div>
       <NavBar />
-
       <div className={styles.p3Container}>
         {/* 多币种敞口分析 */}
         <div className={`${styles.card} ${styles.fullWidth}`}>
           <div className={styles.portfolioHeader}>
             <h2>多币种敞口分析</h2>
             <div className={styles.uploadSection}>
-              {/* 使用 CSVHandler 组件，并传入回调 */}
-              <CSVHandler onDataParsed={handleCSVData} />
-              <button
-                className={styles.refreshBtn}
-                onClick={refreshPortfolioData}
-              >
+              {/* 使用 CSVHandler 组件，不再依赖回调传递数据 */}
+              <CSVHandler />
+              <button className={styles.refreshBtn} onClick={refreshPortfolioData}>
                 <i className="fas fa-sync-alt"></i> 刷新数据
               </button>
             </div>
@@ -319,8 +304,8 @@ const ForexRiskManagement = () => {
             <div className={styles.statCard}>
               <div className={styles.statLabel}>总持仓价值</div>
               <div className={styles.statValue}>
-                {portfolio && portfolio.length > 0 ? (
-                  `$${portfolio
+                {transformedData && transformedData.length > 0 ? (
+                  `$${transformedData
                     .reduce((total, pos) => total + Number(pos.quantity), 0)
                     .toLocaleString()}`
                 ) : (
@@ -341,7 +326,6 @@ const ForexRiskManagement = () => {
               </div>
             </div>
           </div>
-
           {/* 持仓数据表格 */}
           <div className={styles.matrixContainer}>
             <table className={styles.matrix}>
@@ -358,17 +342,13 @@ const ForexRiskManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {portfolio && portfolio.length > 0 ? (
-                  portfolio.map((row, index) => (
+                {transformedData && transformedData.length > 0 ? (
+                  transformedData.map((row, index) => (
                     <tr key={index}>
                       <td>{row.currency}</td>
                       <td>{row.quantity}</td>
                       <td>{(row.proportion * 100).toFixed(2)}%</td>
-                      <td
-                        className={
-                          row.benefit >= 0 ? styles.positive : styles.negative
-                        }
-                      >
+                      <td className={row.benefit >= 0 ? styles.positive : styles.negative}>
                         {row.benefit >= 0 ? `+${row.benefit}` : row.benefit}
                       </td>
                       <td>{row.dailyVolatility}</td>
@@ -387,7 +367,6 @@ const ForexRiskManagement = () => {
               </tbody>
             </table>
           </div>
-
           <div className={styles.exposureDetails}>
             <h4>主要风险敞口</h4>
             <p style={{ margin: "0.5rem 0" }}>
@@ -395,31 +374,26 @@ const ForexRiskManagement = () => {
               <span className={styles.currencyTag}>EUR: 短头寸</span>
               <span className={styles.currencyTag}>JPY: 中性</span>
             </p>
-            <p
-              style={{ color: "#666", fontSize: "0.9rem", marginTop: "0.5rem" }}
-            >
+            <p style={{ color: "#666", fontSize: "0.9rem", marginTop: "0.5rem" }}>
               当前组合在USD方向上呈现较大敞口，建议通过EUR/USD和GBP/USD对冲降低美元敞口。日元方向保持中性，可作为对冲工具。
             </p>
           </div>
         </div>
 
+        {/* 以下为压力测试、历史回测、智能交易执行系统部分，示例代码保持不变 */}
         {/* 压力测试结果 */}
         <div className={styles.card}>
           <h2>压力测试结果</h2>
           <div className={styles.stressTestScenarios}>
             <div className={styles.scenarioTabs}>
               <button
-                className={`${styles.tabBtn} ${
-                  scenario === "historical" ? styles.tabBtnActive : ""
-                }`}
+                className={`${styles.tabBtn} ${scenario === "historical" ? styles.tabBtnActive : ""}`}
                 onClick={() => handleScenarioSwitch("historical")}
               >
                 历史情景
               </button>
               <button
-                className={`${styles.tabBtn} ${
-                  scenario === "hypothetical" ? styles.tabBtnActive : ""
-                }`}
+                className={`${styles.tabBtn} ${scenario === "hypothetical" ? styles.tabBtnActive : ""}`}
                 onClick={() => handleScenarioSwitch("hypothetical")}
               >
                 假设情景
@@ -443,9 +417,7 @@ const ForexRiskManagement = () => {
                       <td>美联储加息100bp</td>
                       <td className={styles.negative}>-$85,000</td>
                       <td>
-                        <span
-                          className={`${styles.riskLevel} ${styles.riskHigh}`}
-                        >
+                        <span className={`${styles.riskLevel} ${styles.riskHigh}`}>
                           高
                         </span>
                       </td>
@@ -456,9 +428,7 @@ const ForexRiskManagement = () => {
                       <td>欧债危机恶化</td>
                       <td className={styles.negative}>-$62,000</td>
                       <td>
-                        <span
-                          className={`${styles.riskLevel} ${styles.riskMedium}`}
-                        >
+                        <span className={`${styles.riskLevel} ${styles.riskMedium}`}>
                           中
                         </span>
                       </td>
@@ -469,9 +439,7 @@ const ForexRiskManagement = () => {
                       <td>英国脱欧影响</td>
                       <td className={styles.negative}>-$45,000</td>
                       <td>
-                        <span
-                          className={`${styles.riskLevel} ${styles.riskMedium}`}
-                        >
+                        <span className={`${styles.riskLevel} ${styles.riskMedium}`}>
                           中
                         </span>
                       </td>
@@ -481,11 +449,7 @@ const ForexRiskManagement = () => {
                   </tbody>
                 </table>
               </div>
-              <div
-                className={styles.chartContainer}
-                ref={stressTestChartRef}
-                id="stress-test-chart"
-              >
+              <div className={styles.chartContainer} ref={stressTestChartRef} id="stress-test-chart">
                 {/* 压力测试图表将在这里渲染 */}
               </div>
             </div>
@@ -503,9 +467,7 @@ const ForexRiskManagement = () => {
               <div className={styles.summaryCard}>
                 <div className={styles.summaryTitle}>风险承受能力</div>
                 <div className={styles.summaryValue}>充足</div>
-                <div className={styles.summaryDesc}>
-                  当前资本金可覆盖压力情景
-                </div>
+                <div className={styles.summaryDesc}>当前资本金可覆盖压力情景</div>
               </div>
               <div className={styles.summaryCard}>
                 <div className={styles.summaryTitle}>建议对冲比例</div>
@@ -552,11 +514,7 @@ const ForexRiskManagement = () => {
               <div className={styles.metricValue}>1.86</div>
             </div>
           </div>
-          <div
-            className={styles.chartContainer}
-            ref={backtestChartRef}
-            id="backtest-chart"
-          >
+          <div className={styles.chartContainer} ref={backtestChartRef} id="backtest-chart">
             {/* 回测结果图表将在这里渲染 */}
           </div>
           <table className={styles.matrix}>
@@ -665,11 +623,7 @@ const ForexRiskManagement = () => {
                 <p>当前对冲成本相对较低，建议进行策略性对冲。</p>
               </div>
             </div>
-            <div
-              className={styles.chartContainer}
-              ref={hedgingChartRef}
-              id="hedging-chart"
-            >
+            <div className={styles.chartContainer} ref={hedgingChartRef} id="hedging-chart">
               {/* 对冲建议图表将在这里渲染 */}
             </div>
             <button className={styles.button}>执行对冲策略</button>

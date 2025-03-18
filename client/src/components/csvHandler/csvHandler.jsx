@@ -1,8 +1,14 @@
+//transformedData是解析csv文档后的json数据
+//初步思路是把transformedData发给后端，后端返回一些数据（查看后端文档）,然后前端拿到传回页面三处理
+// analysis是测试数据不必管他
+
 import React, { useRef, useState } from "react";
 import Papa from "papaparse";
 import styles from "./CSVHandler.module.css";
 import { sendTradeData } from "../Api/analyze"; // 导入发送数据的函数
 import ErrorModal from "../ErrorModal/ErrorModal";
+import { useNavigate } from "react-router-dom"; // 新增：用于页面导航
+import { useStore } from "../../../store"; // 导入 zustand 全局状态
 
 
 const analysis = {
@@ -16,6 +22,10 @@ const analysis = {
 const CSVHandler = ({ onDataParsed }) => {
   const fileInputRef = useRef(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const setData = useStore((state) => state.setData); // 从 zustand 中获取更新数据的方法
+
+
+
 
   const handleButtonClick = () => {
     // 每次点击上传按钮前清除之前的错误信息
@@ -100,7 +110,10 @@ CSV 文件格式不正确，上传无效！
         console.log(transformedData);
 
         // 传递后端处理后的数据传给父组件,
-        onDataParsed({transformedData, analysis }); // 传递包含testData和analysis的对象
+        // onDataParsed({transformedData, analysis }); // 传递包含testData和analysis的对象
+        // 使用 zustand 将数据存入全局状态
+        setData(transformedData,analysis);
+
 
         // try {
         //   const backendData = await sendTradeData(transformedData); 
