@@ -3,6 +3,7 @@ import * as echarts from "echarts";
 import NavBar from "../../components/NavBar/NavBar";
 import styles from "./OneClickDecision.module.css";
 import CSVHandler from "../../components/csvHandler/csvHandler";
+import Loading from "../../components/Loading";
 
 const ForexRiskManagement = () => {
   // 图表容器 DOM 引用
@@ -244,13 +245,16 @@ const ForexRiskManagement = () => {
     // 此处可根据情景切换加载不同数据或图表配置
   };
 
-  // 新增状态：保存从 CSVHandler 获取的持仓数据
-  const [portfolioData, setPortfolioData] = useState([]);
+  // 新增状态：保存从 CSVHandler 获取的持仓数据（portfolio 为一个数组）
+  const [portfolio, setPortfolio] = useState([]);
+  const [analysis, setAnalysis] = useState([]);
 
   // CSVHandler 成功解析数据后的回调
   const handleCSVData = (data) => {
-    console.log("Received data:", data); 
-    setPortfolioData(data.data); // 确保数据格式正确
+    console.log("Received data:", data);
+    setPortfolio(data.transformedData);
+    // 确保数据格式正确
+    setAnalysis(data.analysis);
   };
 
   // 初始化图表与监听窗口大小变化
@@ -315,19 +319,25 @@ const ForexRiskManagement = () => {
             <div className={styles.statCard}>
               <div className={styles.statLabel}>总持仓价值</div>
               <div className={styles.statValue}>
-                ${portfolioData.totalValue}
+                {portfolio && portfolio.length > 0 ? (
+                  `$${portfolio
+                    .reduce((total, pos) => total + Number(pos.quantity), 0)
+                    .toLocaleString()}`
+                ) : (
+                  <Loading />
+                )}
               </div>
             </div>
             <div className={styles.statCard}>
               <div className={styles.statLabel}>组合波动率</div>
               <div className={styles.statValue}>
-                {(portfolioData.portfolioVolatility * 100).toFixed(2)}%
+                <Loading />
               </div>
             </div>
             <div className={styles.statCard}>
               <div className={styles.statLabel}>夏普比率</div>
               <div className={styles.statValue}>
-                {portfolioData.sharpeRatio}
+                <Loading />
               </div>
             </div>
           </div>
@@ -348,13 +358,19 @@ const ForexRiskManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {portfolioData.portfolio ? (
-                  portfolioData.portfolio.map((row, index) => (
+                {portfolio && portfolio.length > 0 ? (
+                  portfolio.map((row, index) => (
                     <tr key={index}>
                       <td>{row.currency}</td>
                       <td>{row.quantity}</td>
                       <td>{(row.proportion * 100).toFixed(2)}%</td>
-                      <td>{row.benefit}</td>
+                      <td
+                        className={
+                          row.benefit >= 0 ? styles.positive : styles.negative
+                        }
+                      >
+                        {row.benefit >= 0 ? `+${row.benefit}` : row.benefit}
+                      </td>
                       <td>{row.dailyVolatility}</td>
                       <td>{row.valueAtRisk}</td>
                       <td>{row.beta}</td>
@@ -363,7 +379,9 @@ const ForexRiskManagement = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8">请上传 CSV 数据</td>
+                    <td colSpan="8">
+                      <Loading />
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -519,15 +537,11 @@ const ForexRiskManagement = () => {
           <div className={styles.backtestMetrics}>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>累计收益率</div>
-              <div className={`${styles.metricValue} ${styles.positive}`}>
-                +15.8%
-              </div>
+              <Loading />
             </div>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>最大回撤</div>
-              <div className={`${styles.metricValue} ${styles.negative}`}>
-                -8.5%
-              </div>
+              <Loading />
             </div>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>胜率</div>
@@ -550,7 +564,6 @@ const ForexRiskManagement = () => {
               <tr>
                 <th>时间段</th>
                 <th>对冲前收益</th>
-                <th>对冲后收益</th>
                 <th>对冲成本</th>
                 <th>净收益</th>
                 <th>最大回撤</th>

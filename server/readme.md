@@ -75,73 +75,23 @@ PORT=3000 npm start
 
 ```json
 [
-  {
-    "currency": "EUR/USD",
-    "quantity": 1000000,
-    "rate": 1.08,
-    "currentPrice": 1.085,
-    "openPrice": 1.08,
-    "dailyVolatility": 0.125
-  }
-  // 更多持仓数据...
+    {
+        "currency": "EUR/USD",
+        "quantity": 1000000,
+        "proportion": 0.172,
+        "benefit": 2500,
+        "dailyVolatility": 0.125,
+        "valueAtRisk": "$15,000",
+        "beta": 1.2,
+        "hedgingCost": 0.0015
+    },
+    // 更多数据
 ]
 ```
 
 - **响应：**
-类似于下面的数据格式
-```json
-{
-  "success": true,
-  "message": "持仓数据上传成功",
-  "data": {
-    "totalValue": "10,250000",
-    "portfolioVolatility": 0.07,
-    "sharpeRatio": 1.58,
-    "portfolio": [
-      {
-        "currency": "EUR/USD",
-        "quantity": 15000,
-        "proportion": 0.25,
-        "benefit": 2000,
-        "dailyVolatility": 0.1,
-        "valueAtRisk": "$8,000",
-        "beta": 1.3,
-        "hedgingCost": 0.002
-      },
-      {
-        "currency": "GBP/USD",
-        "quantity": 12000,
-        "proportion": 0.2,
-        "benefit": -500,
-        "dailyVolatility": 0.15,
-        "valueAtRisk": "$5,000",
-        "beta": 1.1,
-        "hedgingCost": 0.0018
-      },
-      {
-        "currency": "AUD/USD",
-        "quantity": 8000,
-        "proportion": 0.15,
-        "benefit": 1500,
-        "dailyVolatility": 0.12,
-        "valueAtRisk": "$6,000",
-        "beta": 1.05,
-        "hedgingCost": 0.0013
-      },
-      {
-        "currency": "USD/JPY",
-        "quantity": 10000,
-        "proportion": 0.4,
-        "benefit": 3000,
-        "dailyVolatility": 0.09,
-        "valueAtRisk": "$12,000",
-        "beta": 1.2,
-        "hedgingCost": 0.0025
-      }
-    ]
-  }
-}
-```
+相应给前端如下数据：
+组合波动率，夏普比率，~~累计收益率，最大回撤，胜率，收益撤回比(可能缺少数据，可以先不做)~~
 
 #### 1.2 获取对冲建议
 
