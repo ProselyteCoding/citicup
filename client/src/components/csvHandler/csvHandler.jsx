@@ -7,16 +7,14 @@ import Papa from "papaparse";
 import styles from "./CSVHandler.module.css";
 import { sendTradeData } from "../Api/analyze"; // 导入发送数据的函数
 import ErrorModal from "../ErrorModal/ErrorModal";
-import { useNavigate } from "react-router-dom"; // 新增：用于页面导航
 import { useStore } from "../../../store"; // 导入 zustand 全局状态
 
-
 const analysis = {
-  "finalAssetValue": 10000,
-  "initialAssetValue": 50000,
-  "highestAssetValue": 120000,
-  "lowestAssetValue": 45000,
-  "profitableTradeCount": 25
+  finalAssetValue: 10000,
+  initialAssetValue: 50000,
+  highestAssetValue: 120000,
+  lowestAssetValue: 45000,
+  profitableTradeCount: 25,
 };
 
 const CSVHandler = ({ onDataParsed }) => {
@@ -24,13 +22,18 @@ const CSVHandler = ({ onDataParsed }) => {
   const [errorMsg, setErrorMsg] = useState(null);
   const setData = useStore((state) => state.setData); // 从 zustand 中获取更新数据的方法
 
-
-
-
   const handleButtonClick = () => {
-    // 每次点击上传按钮前清除之前的错误信息
+    // 1. 清空之前的错误信息
     setErrorMsg(null);
-    fileInputRef.current && fileInputRef.current.click();
+
+    // 2. 如果你想每次点击上传按钮都重置之前的数据，请解除下面注释
+    setData([], {}); // 清空之前的解析结果（如果你希望保留，可以删除这行）
+
+    // 3. 清空 fileInput，以便再次选择同一文件时也能触发 onChange
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
+    }
   };
 
   const handleFileUpload = (event) => {
@@ -109,14 +112,12 @@ CSV 文件格式不正确，上传无效！
         }
         console.log(transformedData);
 
-        // 传递后端处理后的数据传给父组件,
-        // onDataParsed({transformedData, analysis }); // 传递包含testData和analysis的对象
         // 使用 zustand 将数据存入全局状态
-        setData(transformedData,analysis);
+        setData(transformedData, analysis);
 
-
+        // 如需将数据传给后端，请参照以下注释逻辑
         // try {
-        //   const backendData = await sendTradeData(transformedData); 
+        //   const backendData = await sendTradeData(transformedData);
         //   onDataParsed(backendData); // 传回数据给父组件
         //   setErrorMsg(null); // 清除错误信息
         // } catch (error) {
