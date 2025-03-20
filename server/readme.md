@@ -81,7 +81,7 @@ PORT=3000 npm start
         "proportion": 0.172,
         "benefit": 2500,
         "dailyVolatility": 0.125,
-        "valueAtRisk": "$15,000",
+        "valueAtRisk": "15000", #除了数字不要加特殊符号
         "beta": 1.2,
         "hedgingCost": 0.0015
     },
