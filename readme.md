@@ -16,7 +16,7 @@ json数据格式：
     "proportion": 0.5,         // 持仓占比 number
     "benefit": -1000,          // 盈亏 number（修正冒号为英文符号）
     "dailyVolatility": 0.125,  // 日波动率 number
-    "valueAtRisk": "$15,000",  // VaR(95%) string
+    "valueAtRisk": "15000",  // VaR(95%) string ！这里需要修改，不要加逗号，和$这个符号
     "beta": 1.2,               // Beta number
     "hedgingCost": 0.0015      // 对冲成本 number
   }
