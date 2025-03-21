@@ -83,8 +83,8 @@ json数据格式：
   
   "recommendedPositions": [    // 货币建议持仓
     {
-      "currency": "USD",
-      "quantity": 10000
+      "currency": "USD/JPY",  // 货币对 string
+      "quantity": 10000 // 持仓量 number
     },
     // ...其他持仓
   ]
@@ -99,7 +99,14 @@ json数据格式：
 
 ``` json
 {
-  "currencyExposure": null,    // 货币敞口及风险计算（暂未提供）
+  "currencyExposure": [      // 高风险货币列表
+    {
+      "currency": "USD/JPY",  // 货币对 string
+      "riskRate": "高风险", // 风险率 string
+      "tendency": "上" // 趋势 string
+    },
+    // ...其他货币对
+  ],    
 
   "termRiskDistribution": [    // 账期风险分布
     {

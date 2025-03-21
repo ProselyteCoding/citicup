@@ -351,13 +351,13 @@ const ForexRiskManagement = () => {
             <div className={styles.statCard}>
               <div className={styles.statLabel}>组合波动率</div>
               <div className={styles.statValue}>
-                <Loading />
-              </div>
-            </div>
-            <div className={styles.statCard}>
-              <div className={styles.statLabel}>夏普比率</div>
-              <div className={styles.statValue}>
-                <Loading />
+                {transformedData && transformedData.length > 0 ? (
+                  `$${transformedData
+                    .reduce((total, pos) => total + Number(pos.quantity), 0)
+                    .toLocaleString()}`
+                ) : (
+                  <Loading />
+                )}
               </div>
             </div>
           </div>
