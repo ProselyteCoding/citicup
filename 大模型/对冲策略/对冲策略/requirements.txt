@@ -1,0 +1,4 @@
+langchain_openai
+langgraph
+numpy
+pandas

@@ -21,7 +21,7 @@ const ForexRiskManagement = () => {
   const backtestChartInstance = useRef(null);
 
   // 压力测试情景状态
-  const [scenario, setScenario] = useState("historical");
+  const [scenario, setScenario] = useState("");
 
   // 模拟数据
   const currencyPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD"];
@@ -243,6 +243,15 @@ const ForexRiskManagement = () => {
     backtestChartInstance.current.setOption(option);
   };
 
+
+
+  const handleSubmitScenario = (scenario) => {
+    console.log('提交的情景假设：', scenario);
+    alert(`提交如下情境：${scenario}`)
+  };
+  
+
+
   // 切换压力测试情景（采用 state 管理）
   const handleScenarioSwitch = (type) => {
     setScenario(type);
@@ -282,7 +291,9 @@ const ForexRiskManagement = () => {
       renderHedgingChart();
     }
     if (stressTestChartRef.current) {
-      stressTestChartInstance.current = echarts.init(stressTestChartRef.current);
+      stressTestChartInstance.current = echarts.init(
+        stressTestChartRef.current
+      );
       renderStressTestChart();
     }
     if (backtestChartRef.current) {
@@ -416,16 +427,17 @@ const ForexRiskManagement = () => {
           <h2>压力测试结果</h2>
           <div className={styles.stressTestScenarios}>
             <div className={styles.scenarioTabs}>
-              {/* 这里用一个 <select> 来选择不同的情景 */}
-              <select
-                className={styles.backtestFilter} 
+              {/* 输入框和提交按钮 */}
+              <input
+                type="text"
+                className={styles.backtestFilter}
                 value={scenario}
                 onChange={(e) => handleScenarioSwitch(e.target.value)}
-              >
-                <option value="hypothetical1">假设情景：呼啦呼啦呼啦</option>
-                <option value="hypothetical2">假设情景：啊米诺斯</option>
-                <option value="hypothetical3">假设情景：我不吃牛肉</option>
-              </select>
+                placeholder="请输入情景假设"
+              />
+              <button className={styles.uploadBtn} onClick={() => handleSubmitScenario(scenario)}>
+                <i className="fas fa-upload"></i> 提交情境
+              </button>
             </div>
             <div className={styles.scenarioContent}>
               <div className={styles.scenarioCard}>

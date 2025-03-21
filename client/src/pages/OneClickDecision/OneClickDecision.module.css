@@ -358,3 +358,24 @@
     background: #f0f5ff;
   }
   
+
+
+  
+  .uploadBtn {
+    background: #003366;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.uploadBtn:hover {
+    background: #004080;
+}
+
