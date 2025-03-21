@@ -119,11 +119,22 @@ def scenario_analyzer(input_dict: dict) -> dict:
 
     try:
         output = parser.parse(result_raw['messages'][-1].content)
-
+        
+        # 确保 money 是数字
+        if isinstance(output, dict) and 'money' in output:
+            # 如果 money 是字符串，转换为浮点数
+            if isinstance(output['money'], str):
+                # 移除 $ 符号和逗号
+                cleaned_money = output['money'].replace('$', '').replace(',', '')
+                try:
+                    output['money'] = float(cleaned_money)
+                except ValueError:
+                    output['money'] = 0.0
+        
         # 兼容不同的情况
         if isinstance(output, dict):
             output = ScenarioAnalysisOutput(**output)  # 转换回 Pydantic 对象
-
+        
         return output.model_dump()  # Pydantic v2 兼容
     except OutputParserException as e:
         print(f"解析错误: {e}")
@@ -193,4 +204,4 @@ if __name__ == '__main__':
         result = scenario_analyzer(test_case)
         print(f"分析结果: {result}\n{'-' * 50}")
     except Exception as e:
-        print(f"分析失败: {str(e)}\n{'-' * 50}")
+        print(f"分析失败: {str(e)}\n{'-' * 50}")                           
