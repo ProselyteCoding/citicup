@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import Papa from "papaparse";
 import styles from "./CSVHandler.module.css";
-import { sendTradeData } from "../Api/api"; // 导入发送数据的函数
+// import { sendTradeData } from "../Api/api"; // 导入发送数据的函数
 import ErrorModal from "../ErrorModal/ErrorModal";
 import { useStore } from "../../../store"; // 导入 zustand 全局状态
 
