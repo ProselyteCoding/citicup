@@ -7,22 +7,20 @@ RiskFX 是一个外汇风险管理系统，本后端服务负责处理持仓数�
 ## 文件结构
 
 ```bash
-
-
 server/
-├── index.js                  # 应用入口文件
-├── controllers/              # 控制器目录
-│   ├── portfolioController.js  # 处理持仓相关请求
-│   └── riskController.js       # 处理风险相关请求
-├── routes/                   # 路由目录
-│   ├── portfolioRoutes.js      # 持仓相关路由
-│   └── riskRoutes.js           # 风险相关路由
-├── services/                 # 服务目录
-│   └── aiService.js            # AI 模型服务
-├── utils/                    # 工具函数目录
-│   └── calculationUtils.js     # 计算工具函数
-└── docs/                     # 文档目录
-    └── aiModelDocs.md          # AI 模型接口文档
+├── app.py                     # 应用入口文件
+├── controllers/               # 控制器目录
+│   ├── portfolio_controller.py  # 处理持仓相关请求
+│   └── risk_controller.py       # 处理风险相关请求
+├── routes/                    # 路由目录
+│   ├── portfolio_routes.py      # 持仓相关路由
+│   └── risk_routes.py           # 风险相关路由
+├── services/                  # 服务目录
+│   └── ai_service.py            # AI 模型服务
+├── utils/                     # 工具函数目录
+│   └── calculation_utils.py     # 计算工具函数
+└── docs/                      # 文档目录
+    └── ai_model_docs.md         # AI 模型接口文档
 ```
 
 ````markdown
@@ -30,8 +28,9 @@ server/
 
 项目主要依赖以下包：
 
-- **express** - Web 框架
-- **cors** - 跨域资源共享
+flask - Web 框架
+flask-cors - 跨域资源共享
+python-dotenv - 环境变量管理
 
 ## 安装与启动
 
@@ -39,7 +38,7 @@ server/
 
 ```bash
 cd server
-npm install
+pip install -r requirements.txt
 ```
 ````
 
@@ -48,19 +47,24 @@ npm install
 #### 正常启动
 
 ```bash
-npm start
+python app.py
 ```
 
-#### 开发模式启动（需要安装 nodemon）
-
+#### 使用 Flask CLI 启动（开发模式）
 ```bash
-npm run dev
+flask --app app --debug run
 ```
 
 服务器默认在端口 5000 上运行。可以通过环境变量 `PORT` 修改端口：
 
 ```bash
-PORT=3000 npm start
+# Linux/Mac
+export FLASK_RUN_PORT=3000
+flask run
+
+# Windows
+set FLASK_RUN_PORT=3000
+flask run
 ```
 
 ## API 接口文档
@@ -69,7 +73,7 @@ PORT=3000 npm start
 
 #### 1.1 上传持仓数据
 
-- **接口：** POST /upload
+- **接口：**  POST /api/portfolio/upload
 - **功能：** 上传并存储持仓数据，计算相关风险指标
 - **请求体：**
 
@@ -143,7 +147,7 @@ PORT=3000 npm start
 
 #### 2.1 压力测试
 
-- **接口：** POST /stress-test
+- **接口：** POST /api/risk/stress-test
 - **功能：** 根据提供的情景进行压力测试
 - **请求体：**
 
@@ -186,7 +190,7 @@ PORT=3000 npm start
 
 ## 计算工具
 
-`utils/calculationUtils.js` 提供了多种风险计算功能：
+`utils/calculation_utils.js` 提供了多种风险计算功能：
 
 - 计算持仓总价值
 - 计算持仓占比
