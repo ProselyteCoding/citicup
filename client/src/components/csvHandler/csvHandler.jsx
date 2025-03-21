@@ -1,11 +1,7 @@
-//transformedData是解析csv文档后的json数据
-//初步思路是把transformedData发给后端，后端返回一些数据（查看后端文档）,然后前端拿到传回页面三处理
-// analysis是测试数据不必管他
-
 import React, { useRef, useState } from "react";
 import Papa from "papaparse";
 import styles from "./CSVHandler.module.css";
-import { sendTradeData } from "../Api/analyze"; // 导入发送数据的函数
+import { sendTradeData } from "../Api/api"; // 导入发送数据的函数
 import ErrorModal from "../ErrorModal/ErrorModal";
 import { useStore } from "../../../store"; // 导入 zustand 全局状态
 
@@ -21,6 +17,7 @@ const CSVHandler = ({ onDataParsed }) => {
   const fileInputRef = useRef(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const setData = useStore((state) => state.setData); // 从 zustand 中获取更新数据的方法
+  const setBackendData = useStore((state) => state.setBackendData); // 新增：从 zustand 中获取更新后端数据的方法
 
   const handleButtonClick = () => {
     // 1. 清空之前的错误信息
@@ -28,6 +25,7 @@ const CSVHandler = ({ onDataParsed }) => {
 
     // 2. 如果你想每次点击上传按钮都重置之前的数据，请解除下面注释
     setData([], {}); // 清空之前的解析结果（如果你希望保留，可以删除这行）
+    setBackendData(null); // 清空之前的后端数据
 
     // 3. 清空 fileInput，以便再次选择同一文件时也能触发 onChange
     if (fileInputRef.current) {
@@ -72,11 +70,10 @@ const CSVHandler = ({ onDataParsed }) => {
           !result.meta.fields ||
           result.meta.fields.join(",") !== expectedFields.join(",")
         ) {
-          const errMsg = `
-CSV 文件格式不正确，上传无效！
+          const errMsg = 
+`CSV 文件格式不正确，上传无效！
 请检查确保表头顺序正确：
-货币对	持仓量	持仓占比	盈亏	日波动率	VaR(95%)	Beta	对冲成本
-`;
+货币对	持仓量	持仓占比	盈亏	日波动率	VaR(95%)	Beta	对冲成本`;
           setErrorMsg(errMsg);
           if (fileInputRef.current) fileInputRef.current.value = "";
           return;
@@ -115,10 +112,11 @@ CSV 文件格式不正确，上传无效！
         // 使用 zustand 将数据存入全局状态
         setData(transformedData, analysis);
 
-        // 如需将数据传给后端，请参照以下注释逻辑
+        // 将数据传给后端，并将返回的数据存入 store
         // try {
         //   const backendData = await sendTradeData(transformedData);
-        //   onDataParsed(backendData); // 传回数据给父组件
+        //   setBackendData(backendData); // 将后端返回的数据存入 store
+        //   //onDataParsed(backendData); // 传回数据给父组件
         //   setErrorMsg(null); // 清除错误信息
         // } catch (error) {
         //   setErrorMsg("后端数据处理失败！");
