@@ -51,6 +51,7 @@ python app.py
 ```
 
 #### 使用 Flask CLI 启动（开发模式）
+
 ```bash
 flask --app app --debug run
 ```
@@ -73,33 +74,39 @@ flask run
 
 #### 1.1 上传持仓数据
 
-- **接口：**  POST /api/portfolio/upload
+- **接口：** POST /api/portfolio/upload
 - **功能：** 上传并存储持仓数据，计算相关风险指标
 - **请求体：**
 
 ```json
 [
-    {
-        "currency": "EUR/USD",
-        "quantity": 1000000,
-        "proportion": 0.172,
-        "benefit": 2500,
-        "dailyVolatility": 0.125,
-        "valueAtRisk": "15000", #除了数字不要加特殊符号
-        "beta": 1.2,
-        "hedgingCost": 0.0015
-    },
-    // 更多数据
+  {
+    "currency": "EUR/USD",
+    "quantity": 1000000,
+    "proportion": 0.35,
+    "benefit": 2500,
+    "dailyVolatility": 0.125,
+    "valueAtRisk": "$15,000",
+    "beta": 1.2,
+    "hedgingCost": 0.0015
+  },
+  {
+    "currency": "USD/JPY",
+    "quantity": 2000000,
+    "proportion": 0.45,
+    "benefit": -1200,
+    "dailyVolatility": 0.085,
+    "valueAtRisk": "$25,000",
+    "beta": 0.9,
+    "hedgingCost": 0.0012
+  }
+  // 其他数据
 ]
 ```
 
-- **响应：**
-相应给前端如下数据：
-~~组合波动率，夏普比率，累计收益率，最大回撤，胜率，收益撤回比(可能缺少数据，可以先不做)~~
-
 #### 1.2 获取对冲建议
 
-- **接口：** GET /hedging-advice
+- **接口：** GET /api/portfolio/hedging-advice
 - **功能：** 获取基于当前持仓的对冲建议
   **前提条件：** 必须先上传持仓数据
 - **响应：**
@@ -117,7 +124,7 @@ flask run
     "positionRiskAssessment": {
       "risk": "高风险",
       "var": "$25,000",
-      "suggestion": "减少EUR敞口"
+      "suggestion": "减少高风险货币敞口"
     },
     "correlationAnalysis": {
       "relative": "强正相关",
@@ -143,9 +150,62 @@ flask run
 }
 ```
 
+#### 1.3 货币预测
+
+- **URL**: /api/risk/currency-prediction
+- **方法**: POST
+- **参数格式**:
+
+```json
+{
+  "currency": "EUR/USD"
+}
+```
+
+- **返回格式**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "upper": 1.12,
+    "lower": 1.08
+  }
+}
+```
+
 ### 2. 风险管理
 
-#### 2.1 压力测试
+#### 2.1 风险信号分析
+
+- **URL**: /api/portfolio/risk-signals
+- **方法**: GET
+- **参数**: 无（使用之前上传的持仓数据）
+- **返回格式**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "current": {
+      "credit": 4.0,
+      "policy": 6.0,
+      "market": 2.0,
+      "politician": 4.0,
+      "economy": 5.0
+    },
+    "warning": {
+      "credit": 6.0,
+      "policy": 7.0,
+      "market": 4.0,
+      "politician": 6.0,
+      "economy": 6.0
+    }
+  }
+}
+```
+
+#### 2.2 压力测试
 
 - **接口：** POST /api/risk/stress-test
 - **功能：** 根据提供的情景进行压力测试
@@ -165,43 +225,59 @@ flask run
   "data": {
     "scenario": "美联储加息100bp",
     "influence": "高",
-    "probability": 0.01,
-    "suggestion": "减少EUR敞口"
+    "probability": 0.4,
+    "suggestion": "减少EUR敞口",
+    "money": 25000.0
   }
 }
 ```
 
-## 数据流程
-
-1. 前端上传持仓数据到 /api/portfolio/upload 端点
-2. 后端保存持仓数据并计算基本风险指标
-3. 前端请求对冲建议或压力测试结果
-4. 后端根据保存的持仓数据调用 AI 服务获取结果
-5. 返回结果给前端展示
-
-## AI 模型集成
-
-系统中有两个关键点需要 AI 模型支持：
-
-- 对冲建议生成 - aiService.getHedgingAdvice()
-- 压力测试结果 - aiService.getStressTestResult()
-
-详细的 AI 模型接口规范请参考 `docs/aiModelDocs.md`。
-
-## 计算工具
-
-`utils/calculation_utils.js` 提供了多种风险计算功能：
-
-- 计算持仓总价值
-- 计算持仓占比
-- 计算日波动率
-- 计算 VaR
-- 计算 Beta 系数
-- 计算对冲成本
-- 计算投资组合波动率
-- 计算夏普比率
-- 计算最大回撤等
-
 ## 健康检查
 
 访问 [http://localhost:5000/health](http://localhost:5000/health) 可以检查服务是否正常运行。
+
+### 前端调用举例
+
+```js
+// 上传持仓数据
+const uploadPortfolio = async (portfolioData) => {
+  const response = await fetch("/api/portfolio/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(portfolioData),
+  });
+  return await response.json();
+};
+
+// 获取对冲建议
+const getHedgingAdvice = async () => {
+  const response = await fetch("/api/portfolio/hedging-advice");
+  return await response.json();
+};
+
+// 获取风险信号分析
+const getRiskSignals = async () => {
+  const response = await fetch("/api/portfolio/risk-signals");
+  return await response.json();
+};
+
+// 提交压力测试情景
+const submitStressTest = async (scenario) => {
+  const response = await fetch("/api/risk/stress-test", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scenario }),
+  });
+  return await response.json();
+};
+
+// 获取货币预测
+const getCurrencyPrediction = async (currency) => {
+  const response = await fetch("/api/risk/currency-prediction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ currency }),
+  });
+  return await response.json();
+};
+```
