@@ -15,15 +15,17 @@ from langgraph.prebuilt import ToolNode
 from langchain_core.prompts import PromptTemplate
 import os
 
-# https://github.com/chatanywhere/GPT_API_free 免费领取
-# os.environ['OPENAI_API_KEY']='你的openai key'
-# os.environ['OPENAI_API_BASE']='https://api.chatanywhere.tech/v1'
+# 设置API密钥和端点
+os.environ['OPENAI_API_KEY'] = 'sk-GQLASa7Vc1lY6NC9pw9X0OMpuct3i6eJz3CcHKfqAvwp5Xws'
+os.environ['OPENAI_API_BASE'] = 'https://api.chatanywhere.tech/v1'
+
 
 # 定义大语言模型 可以选择更好的 gpt-o1 模型 需要付费
 # model_name="gpt-4o"
 # model_name="deepseek-r1"#太jb慢了 还容易报错
 # model_name="o1-preview"
-model_name = "deepseek-r1"
+#model_name = "deepseek-r1"
+model_name = "gpt-4o-mini"
 
 llm = ChatOpenAI(model=model_name)
 
