@@ -1,13 +1,26 @@
 import { create } from "zustand";
 
 export const useStore = create((set) => ({
-  transformedData: null, // 存储解析后的 CSV 数据
-  analysis: null,        // 存储后端返回的测试数据（可选）
-  backendData: null,     // 新增：存储后端返回的数据
-  // 更新解析后的 CSV 数据和测试数据
-  setData: (transformedData, analysis) =>
-    set({ transformedData, analysis }),
-  // 新增：更新后端返回的数据
-  setBackendData: (backendData) =>
-    set({ backendData }),
+  // 全局状态变量
+  transformedData: null,           // CSV解析后的数据
+  adviceData: null,                // 后端返回的对冲建议数据
+  riskSignalsData: null,           // 风险信号数据
+  currencyPredictionData: null,    // 货币预测数据
+  stressTestData: null,            // 压力测试数据
+
+  // 更新函数
+  setTransformedData: (data) =>
+    set({ transformedData: data }),
+  
+  setAdviceData: (data) =>
+    set({ adviceData: data }),
+  
+  setRiskSignalsData: (data) =>
+    set({ riskSignalsData: data }),
+  
+  setCurrencyPredictionData: (data) =>
+    set({ currencyPredictionData: data }),
+  
+  setStressTestData: (data) =>
+    set({ stressTestData: data }),
 }));

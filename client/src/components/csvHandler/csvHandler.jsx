@@ -1,31 +1,27 @@
 import React, { useRef, useState } from "react";
 import Papa from "papaparse";
 import styles from "./CSVHandler.module.css";
-// import { sendTradeData } from "../Api/api"; // 导入发送数据的函数
+import { postTradeData, getTradeData } from "../Api/api";
 import ErrorModal from "../ErrorModal/ErrorModal";
 import { useStore } from "../../../store"; // 导入 zustand 全局状态
-
-const analysis = {
-  finalAssetValue: 10000,
-  initialAssetValue: 50000,
-  highestAssetValue: 120000,
-  lowestAssetValue: 45000,
-  profitableTradeCount: 25,
-};
 
 const CSVHandler = ({ onDataParsed }) => {
   const fileInputRef = useRef(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const setData = useStore((state) => state.setData); // 从 zustand 中获取更新数据的方法
-  const setBackendData = useStore((state) => state.setBackendData); // 新增：从 zustand 中获取更新后端数据的方法
+
+  // 使用 store 中的更新函数
+  const setTransformedData = useStore((state) => state.setTransformedData);
+  const setAdviceData = useStore((state) => state.setAdviceData);
+  const setRiskSignalsData = useStore((state) => state.setRiskSignalsData);
+  const setStressTestData = useStore((state) => state.setStressTestData);
 
   const handleButtonClick = () => {
     // 1. 清空之前的错误信息
     setErrorMsg(null);
 
-    // 2. 如果你想每次点击上传按钮都重置之前的数据，请解除下面注释
-    setData([], {}); // 清空之前的解析结果（如果你希望保留，可以删除这行）
-    setBackendData(null); // 清空之前的后端数据
+    // 2. 重置之前的数据
+    setTransformedData(null); // 清空之前的解析结果
+    setAdviceData(null);      // 清空之前的后端数据
 
     // 3. 清空 fileInput，以便再次选择同一文件时也能触发 onChange
     if (fileInputRef.current) {
@@ -70,8 +66,7 @@ const CSVHandler = ({ onDataParsed }) => {
           !result.meta.fields ||
           result.meta.fields.join(",") !== expectedFields.join(",")
         ) {
-          const errMsg = 
-`CSV 文件格式不正确，上传无效！
+          const errMsg = `CSV 文件格式不正确，上传无效！
 请检查确保表头顺序正确：
 货币对	持仓量	持仓占比	盈亏	日波动率	VaR(95%)	Beta	对冲成本`;
           setErrorMsg(errMsg);
@@ -110,17 +105,33 @@ const CSVHandler = ({ onDataParsed }) => {
         console.log(transformedData);
 
         // 使用 zustand 将数据存入全局状态
-        setData(transformedData, analysis);
+        setTransformedData(transformedData);
 
-        // 将数据传给后端，并将返回的数据存入 store
-        // try {
-        //   const backendData = await sendTradeData(transformedData);
-        //   setBackendData(backendData); // 将后端返回的数据存入 store
-        //   //onDataParsed(backendData); // 传回数据给父组件
-        //   setErrorMsg(null); // 清除错误信息
-        // } catch (error) {
-        //   setErrorMsg("后端数据处理失败！");
-        // }
+        try {
+          // 1.1 上传持仓数据,返回"上传成功"
+          const backendData = await postTradeData("http://localhost:5000/api/portfolio/upload", transformedData);
+          console.log(backendData);
+          // 1.2 调用 GET 请求获取对冲建议，并存入全局状态
+          const adviceDataResponse = await getTradeData("http://localhost:5000/api/portfolio/hedging-advice");
+          console.log(adviceDataResponse);
+          setAdviceData(adviceDataResponse);
+          // 1.3 货币预测的api（假设返回 currencyPredictionData）可按需求添加
+
+          // 2.1 调用 GET 请求获取风险信号分析，并存入全局状态
+          const riskSignalsDataResponse = await getTradeData("http://localhost:5000/api/portfolio/risk-signals");
+          console.log(riskSignalsDataResponse);
+          setRiskSignalsData(riskSignalsDataResponse);
+
+          // 2.2 调用 POST 请求获取压力测试，并存入全局状态
+          // 这里传入页面三 OneClickDecision 用户填写的情境，替换 string 为实际数据
+          // const stressTestDataResponse = await postTradeData("http://localhost:5000/api/risk/stress-test", string);
+          // console.log(stressTestDataResponse);
+          // setStressTestData(stressTestDataResponse);
+
+          setErrorMsg(null); // 清除错误信息
+        } catch (error) {
+          setErrorMsg("后端数据处理失败！");
+        }
       },
     });
   };
