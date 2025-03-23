@@ -1233,3 +1233,220 @@ def Hedging_strategy(input:list)->dict:
         raise(e)
     return result_json
 
+
+
+
+
+
+
+
+
+
+
+#这个是页面二的三个板块（账期风险分布，风险传到路径，宏观风险指数）
+#Risk_strategy(input_data)，input_data还是表示json，大概在1436行
+
+#输出如下
+#解释：1.currencyExposure不用管
+#2.termRiskDistribution表示账期分布 time：30表示1-30天 以此类推
+#3.riskTransmissionPath表示风险传到路径。按照输出的顺序依次给箭头（从左到右），其中数字表示这个圆圈的大小
+#举个例子：['AUDUSD198', 'USDJPY170', 'EURUSD125']表示AUDUSD--> USDJPY--> EURUSD,其中这几个198,170,125分别表示圆圈的大小
+#4.macroRiskCoefficients是宏观经济指数的板块
+#解释：month不用管，all表示综合指数，economy是经济指数，policy表示政策指数，market表示市场指数
+# {'currencyExposure': 621626.6, 
+#  'termRiskDistribution': [{'time': 30, 'risk': 0.0536}, {'time': 60, 'risk': 0.0857}, {'time': 90, 'risk': 0.1286}], 
+#  'riskTransmissionPath': ['AUDUSD198', 'USDJPY170', 'EURUSD125'], 
+#  'macroRiskCoefficients': [{'month': 1, 'all': 80.0, 'economy': 60.0, 'policy': 40.0, 'market': 20.0}]}
+from langchain_openai import ChatOpenAI
+from langgraph.graph import MessagesState
+from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel, Field
+from typing import List, Optional, Any
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.exceptions import OutputParserException
+from typing import List, Dict
+
+import numpy as np
+import pandas as pd
+from langchain.tools import tool
+from langgraph.graph import START, StateGraph
+from langgraph.prebuilt import tools_condition
+from langgraph.prebuilt import ToolNode
+from langchain_core.prompts import PromptTemplate
+import os
+
+# 设置API密钥和端点
+os.environ['OPENAI_API_KEY'] = 'sk-jh4XSNUdoKOgjFt02uglsxzNUvxpZ8fPKgjf7fFVcNPinLxt'
+os.environ['OPENAI_API_BASE'] = 'https://api.chatanywhere.tech/v1'
+
+# 定义模型
+# model_name = "gpt-4o"
+# model_name="deepseek-r1"
+# model_name="o1-preview"
+# model_name="o1"
+model_name = "gpt-4o-mini"
+# model_name="gpt-3.5-turbo"
+llm = ChatOpenAI(model=model_name)
+
+# 定义输出
+class RiskData(BaseModel):
+    currencyExposure: Optional[float] = Field(None, description="货币敞口及风险计算（暂未提供）")
+    termRiskDistribution: List[Dict[str, float]] = Field(description="账期风险分布")
+    riskTransmissionPath: List[str] = Field(description="风险传导路径")
+    macroRiskCoefficients: List[Dict[str, float]] = Field(description="宏观风险系数(ERI)")
+
+# 定义输出解析器
+parser = JsonOutputParser(pydantic_object=RiskData)
+parser.get_format_instructions()
+
+# 定义prompt
+prompt = f'''
+### 任务描述：
+你是一位金融风险分析专家。你的任务是将一组**货币持仓数据**转换为**风险分析报告**，输出格式为标准的 JSON 结构，并且所有数据都需要基于输入进行合理计算和推断。
+
+---
+
+### **输入数据（货币持仓信息）：**
+以下是包含多个货币对的持仓数据，包括货币对名称、持仓量、持仓占比、盈亏、日波动率、风险敞口（VaR）、Beta 系数和对冲成本等信息：
+
+{input}
+
+---
+
+### **输出数据生成规则：**
+- **currencyExposure（货币敞口）**：
+  - 计算基于所有货币对的持仓量、风险敞口（VaR）和波动率得出的整体货币敞口。如果无法计算，则返回 `None`。
+
+- **termRiskDistribution（账期风险分布）**：
+  - 构建短期（30 天）、中期（60 天）、长期（90+ 天）的风险分布，依据输入数据的波动率和 Beta 系数进行估算。
+
+- **riskTransmissionPath（风险传导路径）**：
+  - 选取持仓规模大、风险敞口（VaR）高的主要货币对，并按照其相对风险程度附加数值标签（如 `"JPY30"`、`"USD50"`）。
+
+- **macroRiskCoefficients（宏观风险系数）**：
+  - 提供基于 **经济、政策、市场** 相关指标的风险评估，确保生成的数据与当前市场情况合理匹配。
+
+---
+
+### **输出格式（标准 JSON 结构）**
+你的最终输出**必须严格遵循**以下 JSON 结构，并且所有值应基于输入数据计算得出：
+
+'''
+
+# 定义系统消息
+sys_msg = SystemMessage(content=prompt)
+
+# 定义工具
+@tool
+def compute_currency_exposure(data: List[Dict]) -> Optional[float]:
+    """
+    计算整体货币敞口。
+    根据输入数据的持仓量、波动率和持仓占比，计算整体货币敞口。
+    如果输入数据为空，则返回 None。
+    
+    参数:
+        data (List[Dict]): 包含货币对信息的列表，每个字典包含 'quantity', 'dailyVolatility', 'proportion' 等键。
+    
+    返回:
+        Optional[float]: 整体货币敞口值，或 None（如果输入数据为空）。
+    """
+    if not data:
+        return None
+    portfolio_vol = np.average([d['dailyVolatility'] for d in data], weights=[d['proportion'] for d in data])
+    total_quantity = sum(d['quantity'] for d in data)
+    return portfolio_vol * total_quantity
+
+@tool
+def compute_term_risk_distribution(data: List[Dict]) -> List[Dict[str, float]]:
+    """
+    计算账期风险分布。
+    根据输入数据的波动率和持仓占比，估算短期（30天）、中期（60天）、长期（90+天）的风险分布。
+    
+    参数:
+        data (List[Dict]): 包含货币对信息的列表，每个字典包含 'dailyVolatility', 'proportion' 等键。
+    
+    返回:
+        List[Dict[str, float]]: 账期风险分布，每个字典包含 'time' 和 'risk' 键。
+    """
+    if not data:
+        return []
+    portfolio_vol = np.average([d['dailyVolatility'] for d in data], weights=[d['proportion'] for d in data])
+    return [
+        {"time": 30, "risk": round(portfolio_vol * 0.5, 4)},
+        {"time": 60, "risk": round(portfolio_vol * 0.8, 4)},
+        {"time": 90, "risk": round(portfolio_vol * 1.2, 4)},
+    ]
+
+@tool
+def compute_risk_transmission_path(data: List[Dict]) -> List[str]:
+    """
+    计算风险传导路径。
+    根据输入数据的持仓量和波动率，选取风险最高的货币对，并按风险程度附加数值标签。
+    
+    参数:
+        data (List[Dict]): 包含货币对信息的列表，每个字典包含 'currency', 'quantity', 'dailyVolatility' 等键。
+    
+    返回:
+        List[str]: 风险传导路径，每个字符串表示一个货币对及其风险程度。
+    """
+    if not data:
+        return []
+    df = pd.DataFrame(data)
+    df["risk_factor"] = df["quantity"] * df["dailyVolatility"]
+    df = df.sort_values("risk_factor", ascending=False)
+    result = []
+    top_risk = df.head(3)
+    for _, row in top_risk.iterrows():
+        cleaned_ccy = row["currency"].replace("/", "")
+        factor_label = int(row["risk_factor"] / 1000)
+        result.append(f"{cleaned_ccy}{factor_label}")
+    return result
+
+@tool
+def generate_macro_risk_coefficients() -> List[Dict[str, float]]:
+    """
+    生成宏观风险系数。
+    提供基于经济、政策、市场相关指标的风险评估。
+    
+    返回:
+        List[Dict[str, float]]: 宏观风险系数，每个字典包含 'month', 'all', 'economy', 'policy', 'market' 等键。
+    """
+    return [
+        {"month": 1, "all": 80.0, "economy": 60.0, "policy": 40.0, "market": 20.0}
+    ]
+
+tools = [compute_currency_exposure, compute_term_risk_distribution, compute_risk_transmission_path, generate_macro_risk_coefficients]
+
+# 绑定工具
+llm_with_tools = llm.bind_tools(tools)
+
+# 大模型结点
+def assistant(state: MessagesState):
+    return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
+
+# 实现react架构
+builder = StateGraph(MessagesState)
+builder.add_node("assistant", assistant)
+builder.add_node("tools", ToolNode(tools))
+builder.add_edge(START, "assistant")
+builder.add_conditional_edges("assistant", tools_condition)
+builder.add_edge("tools", "assistant")
+react_graph = builder.compile()
+
+# 输入持仓比例List 输出风险分析Json
+def Risk_strategy(input: List[Dict]) -> dict:
+    message = [HumanMessage(content=str(input))]
+    result_raw = react_graph.invoke({"messages": message})
+    prompt = PromptTemplate(
+        template="你是一个自然语言解析成json格式的专家，你的任务是根据我的输入解析成json格式，\n输入{input}，\n{format_instructions}",
+        input_variables=["input"],
+        partial_variables={"format_instructions": parser.get_format_instructions()}
+    )
+    prompt_value = prompt.format_prompt(input=result_raw['messages'][-1].content)
+    chain = prompt | llm | parser
+    try:
+        result_json = chain.invoke({"input": result_raw['messages'][-1].content})
+    except OutputParserException as e:
+        print(e)
+        raise (e)
+    return result_json
