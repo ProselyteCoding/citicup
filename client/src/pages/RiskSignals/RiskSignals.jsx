@@ -7,7 +7,7 @@ import Loading from "../../components/Loading/Loading";
 
 const Dashboard = () => {
   // 从全局状态中获取 transformedData 和 analysis
-  const { transformedData } = useStore();
+  const { transformedData, adviceData, riskSignalsData } = useStore();
   console.log("从 zustand 获取的数据:", transformedData);
 
   // 图表 DOM 引用
@@ -287,19 +287,18 @@ const Dashboard = () => {
       grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
       xAxis: {
         type: "category",
-        data: ["1-30天", "31-60天", "61-90天", "90天以上"],
+        data: ["1-30天", "31-60天", "61-90天"],
       },
-      yAxis: { type: "value", name: "风险指数", max: 100 },
+      yAxis: { type: "value", name: "风险指数", max: 5 },
       series: [
         {
           name: "风险指数",
           type: "bar",
           barWidth: "40%",
           data: [
-            { value: 30, itemStyle: { color: "#52c41a" } },
-            { value: 45, itemStyle: { color: "#faad14" } },
-            { value: 65, itemStyle: { color: "#ff7a45" } },
-            { value: 85, itemStyle: { color: "#ff4d4f" } },
+            { value: (adviceData.data.termRiskDistribution[0].risk * 100).toFixed(2), itemStyle: { color: "#52c41a" } },
+            { value: (adviceData.data.termRiskDistribution[1].risk * 100).toFixed(2), itemStyle: { color: "#faad14" } },
+            { value: (adviceData.data.termRiskDistribution[2].risk * 100).toFixed(2), itemStyle: { color: "#ff7a45" } },
           ],
           label: { show: true, position: "top", formatter: "{c}%" },
         },
@@ -332,7 +331,7 @@ const Dashboard = () => {
           name: "经济指标",
           type: "line",
           smooth: true,
-          data: [65, 68, 70, 72, 75, 78],
+          data: [65, 68, 70, 72, 75, adviceData.data.macroRiskCoefficients[0].economy],
           lineStyle: { width: 2 },
           itemStyle: { color: "#103d7e" },
         },
@@ -340,7 +339,7 @@ const Dashboard = () => {
           name: "政策指标",
           type: "line",
           smooth: true,
-          data: [55, 58, 60, 62, 65, 68],
+          data: [55, 58, 60, 62, 65, adviceData.data.macroRiskCoefficients[0].policy],
           lineStyle: { width: 2 },
           itemStyle: { color: "#2979ff" },
         },
@@ -348,7 +347,7 @@ const Dashboard = () => {
           name: "市场指标",
           type: "line",
           smooth: true,
-          data: [45, 48, 50, 52, 55, 58],
+          data: [45, 48, 50, 52, 55, adviceData.data.macroRiskCoefficients[0].market],
           lineStyle: { width: 2 },
           itemStyle: { color: "#5c9cff" },
         },
@@ -356,7 +355,7 @@ const Dashboard = () => {
           name: "综合指数",
           type: "line",
           smooth: true,
-          data: [58, 62, 65, 68, 70, 73],
+          data: [58, 62, 65, 68, 70, adviceData.data.macroRiskCoefficients[0].all],
           lineStyle: { width: 3 },
           itemStyle: { color: "#ff4d4f" },
         },
@@ -403,7 +402,7 @@ const Dashboard = () => {
           type: "radar",
           data: [
             {
-              value: [85, 70, 55, 65, 60],
+              value: [riskSignalsData.data.current.credit*10, riskSignalsData.data.current.market*10, riskSignalsData.data.current.politician*10, riskSignalsData.data.current.economy*10, riskSignalsData.data.current.policy*10],
               name: "当前风险",
               symbol: "circle",
               symbolSize: 6,
@@ -411,7 +410,7 @@ const Dashboard = () => {
               areaStyle: { color: "rgba(16, 61, 126, 0.3)" },
             },
             {
-              value: [60, 60, 60, 60, 60],
+              value: [riskSignalsData.data.warning.credit*10, riskSignalsData.data.warning.market*10, riskSignalsData.data.warning.politician*10, riskSignalsData.data.warning.economy*10, riskSignalsData.data.warning.policy*10],
               name: "警戒线",
               symbol: "none",
               lineStyle: { type: "dashed", color: "#ff4d4f" },
