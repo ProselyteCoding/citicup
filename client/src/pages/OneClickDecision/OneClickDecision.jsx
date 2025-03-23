@@ -9,7 +9,8 @@ import { postTradeData} from "../../components/Api/api";
 
 const ForexRiskManagement = () => {
   // 从全局状态中获取解析后的持仓数据和测试数据
-  const { transformedData, analysis } = useStore();
+  const { transformedData, analysis, setStressTestData } = useStore();
+
 
   // 图表容器 DOM 引用
   const hedgingChartRef = useRef(null);
@@ -248,7 +249,6 @@ const ForexRiskManagement = () => {
 
   const handleSubmitScenario = async (scenario) => {
     console.log('提交的情景假设：', scenario);
-  
     try {
       // 发送 POST 请求
       const response = await fetch('http://localhost:5000/api/risk/stress-test', {
@@ -258,26 +258,26 @@ const ForexRiskManagement = () => {
         },
         body: JSON.stringify({ scenario }), // 将 scenario 包装在对象中
       });
-  
+      
       // 检查响应是否成功
       if (!response.ok) {
         throw new Error(`请求失败，状态码：${response.status}`);
       }
-  
+      
       // 解析响应数据
       const data = await response.json();
-  
-      // 假设 setStressTestData 是用于更新全局状态的函数
+      
+      // 更新全局状态，确保 setStressTestData 已定义
       setStressTestData(data);
-  
+      
       // 提示用户成功
       alert(`提交如下情境：${JSON.stringify(scenario)}，压力测试数据更新成功！`);
     } catch (error) {
-      // 捕获并处理错误
-      console.error('提交情景错误:', error);
-      alert('提交情景失败，请重试。');
+      console.error("压力测试请求出错：", error);
+      alert("压力测试请求失败，请稍后重试。");
     }
   };
+  
   
   
 

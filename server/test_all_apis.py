@@ -13,7 +13,7 @@ test_portfolio = [
         "proportion": 0.35,
         "benefit": 2500,
         "dailyVolatility": 0.125,
-        "valueAtRisk": "$15,000",
+        "valueAtRisk": "15,000",
         "beta": 1.2,
         "hedgingCost": 0.0015
     },
@@ -23,7 +23,7 @@ test_portfolio = [
         "proportion": 0.45,
         "benefit": -1200,
         "dailyVolatility": 0.085,
-        "valueAtRisk": "$25,000",
+        "valueAtRisk": "25,000",
         "beta": 0.9,
         "hedgingCost": 0.0012
     }

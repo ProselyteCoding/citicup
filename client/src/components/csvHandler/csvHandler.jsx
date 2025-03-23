@@ -81,7 +81,8 @@ const CSVHandler = () => {
           proportion: Number(row.proportion),
           benefit: Number(row.benefit),
           dailyVolatility: Number(row.dailyVolatility),
-          valueAtRisk: row.valueAtRisk, // 保持字符串格式，例如 "$15,000"
+          // 使用正则表达式去除 valueAtRisk 中的 $ 符号
+          valueAtRisk: row.valueAtRisk ? row.valueAtRisk.replace(/\$/g, "") : row.valueAtRisk,
           beta: Number(row.beta),
           hedgingCost: Number(row.hedgingCost),
         }));
