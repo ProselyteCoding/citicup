@@ -238,13 +238,13 @@ const ForexRiskManagement = () => {
         {
           name: "对冲后收益",
           type: "line",
-          data: [2.5, 1.2, 2.8, 2.2, 1.5, 2.8],
+          data: [3.20, 0.22, -0.21, 0.62, 1.09, 0.99],
           itemStyle: { color: "#2ecc71" },
         },
         {
           name: "累计净收益",
           type: "line",
-          data: [2.38, 3.4, 6.2, 8.4, 9.9, 12.7],
+          data: [3.2, 3.4, 3.1, 3.6, 4.6, 5.5],
           itemStyle: { color: "#3498db" },
           lineStyle: { width: 3 },
           emphasis: { lineStyle: { width: 4 } },
@@ -631,7 +631,7 @@ useEffect(() => {
             <tbody>
               <tr>
                 <td>2024-01</td>
-                <td className={styles.positive}>+3.2%</td>
+                <td className={styles.positive}>+2.8%</td>
                 <td className={styles.positive}>+0.05%</td>
                 <td>+3.2%</td>
                 <td className={styles.positive}>+0.51%</td>
@@ -639,7 +639,7 @@ useEffect(() => {
               </tr>
               <tr>
                 <td>2024-02</td>
-                <td className={styles.positive}>+0.22%</td>
+                <td className={styles.negative}>-1.5%</td>
                 <td className={styles.positive}>+0.06%</td>
                 <td>+0.2%</td>
                 <td className={styles.positive}>+0.23%</td>
@@ -647,7 +647,7 @@ useEffect(() => {
               </tr>
               <tr>
                 <td>2024-03</td>
-                <td className={styles.negative}>-0.21%</td>
+                <td className={styles.positive}>3.2%</td>
                 <td className={styles.positive}>+0.10%</td>
                 <td>-0.3%</td>
                 <td className={styles.positive}>+0.44%</td>
@@ -655,7 +655,7 @@ useEffect(() => {
               </tr>
               <tr>
                 <td>2024-04</td>
-                <td className={styles.positive}>+0.62%</td>
+                <td className={styles.positive}>+1.8%</td>
                 <td className={styles.positive}>+0.08%</td>
                 <td>+0.5%</td>
                 <td className={styles.positive}>+0.37%</td>
@@ -663,7 +663,7 @@ useEffect(() => {
               </tr>
               <tr>
                 <td>2024-05</td>
-                <td className={styles.positive}>+1.09%</td>
+                <td className={styles.negative}>-2.1%</td>
                 <td className={styles.positive}>+0.12%</td>
                 <td>+1.0%</td>
                 <td className={styles.positive}>+0.78%</td>
@@ -671,7 +671,7 @@ useEffect(() => {
               </tr>
               <tr>
                 <td>2024-06</td>
-                <td className={styles.positive}>+0.99%</td>
+                <td className={styles.positive}>+2.5%</td>
                 <td className={styles.positive}>+0.07%</td>
                 <td>+0.9%</td>
                 <td className={styles.positive}>+1.02%</td>
