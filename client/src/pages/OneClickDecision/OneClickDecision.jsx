@@ -5,6 +5,7 @@ import styles from "./OneClickDecision.module.css";
 import CSVHandler from "../../components/csvHandler/csvHandler";
 import Loading from "../../components/Loading";
 import { useStore } from "../../../store"; // 从 zustand 中读取数据
+import { postTradeData} from "../../components/Api/api";
 
 const ForexRiskManagement = () => {
   // 从全局状态中获取解析后的持仓数据和测试数据
@@ -245,10 +246,39 @@ const ForexRiskManagement = () => {
 
 
 
-  const handleSubmitScenario = (scenario) => {
+  const handleSubmitScenario = async (scenario) => {
     console.log('提交的情景假设：', scenario);
-    alert(`提交如下情境：${scenario}`)
+  
+    try {
+      // 发送 POST 请求
+      const response = await fetch('http://localhost:5000/api/risk/stress-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // 设置请求头为 JSON 格式
+        },
+        body: JSON.stringify({ scenario }), // 将 scenario 包装在对象中
+      });
+  
+      // 检查响应是否成功
+      if (!response.ok) {
+        throw new Error(`请求失败，状态码：${response.status}`);
+      }
+  
+      // 解析响应数据
+      const data = await response.json();
+  
+      // 假设 setStressTestData 是用于更新全局状态的函数
+      setStressTestData(data);
+  
+      // 提示用户成功
+      alert(`提交如下情境：${JSON.stringify(scenario)}，压力测试数据更新成功！`);
+    } catch (error) {
+      // 捕获并处理错误
+      console.error('提交情景错误:', error);
+      alert('提交情景失败，请重试。');
+    }
   };
+  
   
 
 
