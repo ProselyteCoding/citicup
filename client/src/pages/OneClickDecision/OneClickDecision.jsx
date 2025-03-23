@@ -3,7 +3,7 @@ import * as echarts from "echarts";
 import NavBar from "../../components/NavBar/NavBar";
 import styles from "./OneClickDecision.module.css";
 import CSVHandler from "../../components/csvHandler/csvHandler";
-import Loading from "../../components/Loading";
+import Loading from "../../components/Loading/Loading";
 import { useStore } from "../../../store"; // 从 zustand 中读取数据
 import { postTradeData} from "../../components/Api/api";
 
@@ -139,7 +139,7 @@ const ForexRiskManagement = () => {
       },
       xAxis: {
         type: "category",
-        data: ["美联储加息", "欧债危机", "英国脱欧"],
+        data: ["美联储加息", "欧债危机"],
         axisLabel: { interval: 0, rotate: 15 },
       },
       yAxis: [
@@ -164,14 +164,14 @@ const ForexRiskManagement = () => {
         {
           name: "潜在损失",
           type: "bar",
-          data: [85000, 62000, 45000],
+          data: [85000, 62000],
           itemStyle: { color: "#e74c3c" },
         },
         {
           name: "发生概率",
           type: "line",
           yAxisIndex: 1,
-          data: [15, 12, 18],
+          data: [15, 12],
           itemStyle: { color: "#3498db" },
           label: { show: true, formatter: "{c}%" },
         },
@@ -382,9 +382,14 @@ const ForexRiskManagement = () => {
               <div className={styles.statLabel}>组合波动率</div>
               <div className={styles.statValue}>
                 {transformedData && transformedData.length > 0 ? (
-                  `$${transformedData
-                    .reduce((total, pos) => total + Number(pos.quantity), 0)
-                    .toLocaleString()}`
+                  `${Math.sqrt(
+                    transformedData.reduce(
+                      (total, pos) =>
+                        total +
+                        Number(pos.proportion) * Number(pos.dailyVolatility),
+                      0
+                    ) * 10000
+                  ).toLocaleString()}%`
                 ) : (
                   <Loading />
                 )}
@@ -465,7 +470,10 @@ const ForexRiskManagement = () => {
                 onChange={(e) => handleScenarioSwitch(e.target.value)}
                 placeholder="请输入情景假设"
               />
-              <button className={styles.uploadBtn} onClick={() => handleSubmitScenario(scenario)}>
+              <button
+                className={styles.uploadBtn}
+                onClick={() => handleSubmitScenario(scenario)}
+              >
                 <i className="fas fa-upload"></i> 提交情境
               </button>
             </div>
@@ -509,19 +517,6 @@ const ForexRiskManagement = () => {
                       <td>12%</td>
                       <td>减少EUR敞口</td>
                     </tr>
-                    <tr>
-                      <td>英国脱欧影响</td>
-                      <td className={styles.negative}>-$45,000</td>
-                      <td>
-                        <span
-                          className={`${styles.riskLevel} ${styles.riskMedium}`}
-                        >
-                          中
-                        </span>
-                      </td>
-                      <td>18%</td>
-                      <td>调整GBP/USD持仓</td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -563,7 +558,7 @@ const ForexRiskManagement = () => {
         {/* 历史回测分析 */}
         <div className={styles.card}>
           <h2>历史回测分析</h2>
-          <div className={styles.backtestHeader}>
+          {/* <div className={styles.backtestHeader}>
             <div className={styles.backtestFilters}>
               <select className={styles.backtestFilter} defaultValue="6m">
                 <option value="1m">近1月</option>
@@ -577,15 +572,15 @@ const ForexRiskManagement = () => {
                 <option value="monthly">月度</option>
               </select>
             </div>
-          </div>
+          </div> */}
           <div className={styles.backtestMetrics}>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>累计收益率</div>
-              <Loading />
+              <div className={styles.metricValue}>+15.8%</div>
             </div>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>最大回撤</div>
-              <Loading />
+              <div className={styles.metricValue}>-8.5%</div>
             </div>
             <div className={styles.metricCard}>
               <div className={styles.metricLabel}>胜率</div>
@@ -616,31 +611,52 @@ const ForexRiskManagement = () => {
             </thead>
             <tbody>
               <tr>
-                <td>2024-03</td>
+                <td>2024-01</td>
                 <td className={styles.positive}>+3.2%</td>
-                <td className={styles.positive}>+2.8%</td>
-                <td>0.15%</td>
-                <td className={styles.positive}>+2.65%</td>
-                <td className={styles.negative}>-2.1%</td>
-                <td>1.95</td>
+                <td className={styles.positive}>+0.05%</td>
+                <td>+3.2%</td>
+                <td className={styles.positive}>+0.51%</td>
+                <td className={styles.negative}>1.002</td>
               </tr>
               <tr>
                 <td>2024-02</td>
-                <td className={styles.negative}>-1.5%</td>
-                <td className={styles.positive}>+1.2%</td>
-                <td>0.18%</td>
-                <td className={styles.positive}>+1.02%</td>
-                <td className={styles.negative}>-1.8%</td>
-                <td>1.45</td>
+                <td className={styles.positive}>+0.22%</td>
+                <td className={styles.positive}>+0.06%</td>
+                <td>+0.2%</td>
+                <td className={styles.positive}>+0.23%</td>
+                <td className={styles.negative}>1.001</td>
               </tr>
               <tr>
-                <td>2024-01</td>
-                <td className={styles.positive}>+2.8%</td>
-                <td className={styles.positive}>+2.5%</td>
-                <td>0.12%</td>
-                <td className={styles.positive}>+2.38%</td>
-                <td className={styles.negative}>-1.5%</td>
-                <td>2.15</td>
+                <td>2024-03</td>
+                <td className={styles.negative}>-0.21%</td>
+                <td className={styles.positive}>+0.10%</td>
+                <td>-0.3%</td>
+                <td className={styles.positive}>+0.44%</td>
+                <td className={styles.negative}>1.005</td>
+              </tr>
+              <tr>
+                <td>2024-04</td>
+                <td className={styles.positive}>+0.62%</td>
+                <td className={styles.positive}>+0.08%</td>
+                <td>+0.5%</td>
+                <td className={styles.positive}>+0.37%</td>
+                <td className={styles.negative}>1.007</td>
+              </tr>
+              <tr>
+                <td>2024-05</td>
+                <td className={styles.positive}>+1.09%</td>
+                <td className={styles.positive}>+0.12%</td>
+                <td>+1.0%</td>
+                <td className={styles.positive}>+0.78%</td>
+                <td className={styles.negative}>1.006</td>
+              </tr>
+              <tr>
+                <td>2024-06</td>
+                <td className={styles.positive}>+0.99%</td>
+                <td className={styles.positive}>+0.07%</td>
+                <td>+0.9%</td>
+                <td className={styles.positive}>+1.02%</td>
+                <td className={styles.negative}>1.009</td>
               </tr>
             </tbody>
           </table>

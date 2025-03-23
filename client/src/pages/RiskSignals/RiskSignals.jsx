@@ -3,7 +3,7 @@ import * as echarts from "echarts";
 import NavBar from "../../components/NavBar/NavBar";
 import styles from "./RiskSignals.module.css";
 import { useStore } from "../../../store"; // 导入 zustand store
-import Loading from "../../components/Loading";
+import Loading from "../../components/Loading/Loading";
 
 const Dashboard = () => {
   // 从全局状态中获取 transformedData 和 analysis
@@ -28,19 +28,10 @@ const Dashboard = () => {
   // 状态管理
   const [selectedHighRiskCurrency, setSelectedHighRiskCurrency] = useState("");
   const [lastUpdateTime, setLastUpdateTime] = useState("--");
+  const [highRiskCurrencies, setHighRiskCurrencies] = useState([]);
 
   // 模拟数据
   const currencyPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD"];
-  // 高风险货币列表数据（可扩展）
-  const highRiskCurrencies = [
-    { currency: "EUR/USD", riskLevel: "高风险", exposure: "38%", trend: "up" },
-    {
-      currency: "GBP/USD",
-      riskLevel: "中风险",
-      exposure: "25%",
-      trend: "right",
-    },
-  ];
 
   // 生成日期数据
   const generateDates = useCallback((timeframe) => {
@@ -99,7 +90,7 @@ const Dashboard = () => {
     return data;
   }, []);
 
-  // 渲染各图表的函数
+  // 货币敞口分布
   const renderExposurePie = useCallback(() => {
     // 如果 DOM 还没渲染出来，直接 return
     if (!exposurePieRef.current) return;
@@ -126,20 +117,18 @@ const Dashboard = () => {
             label: { show: true, fontSize: "20", fontWeight: "bold" },
           },
           labelLine: { show: false },
-          color: ["#103d7e", "#1a5bb7", "#2979ff", "#5c9cff", "#8ebfff"],
-          data: [
-            { value: transformedData[0].proportion*100 || 0, name: `${transformedData[0].currency || "未知"}` },
-            { value: transformedData[1].proportion*100 || 0, name: `${transformedData[1].currency || "未知"}` },
-            { value: transformedData[2].proportion*100 || 0, name: `${transformedData[2].currency || "未知"}` },
-            { value: transformedData[3].proportion*100 || 0, name: `${transformedData[3].currency || "未知"}` },
-            { value: transformedData[4].proportion*100 || 0, name: "其他" },
-          ],
+          color: ["#103d7e", "#1a5bb7", "#2979ff", "#5c9cff", "#8ebfff", "#a6f9ef", "#2891f7"],
+          data: transformedData.map((item) => ({
+            value: item.proportion * 100 || 0,
+            name: `${item.currency || "未知"}`,
+          })),
         },
       ],
     };
     charts.current.exposurePie.setOption(option);
-  }, []);
+  }, [transformedData]);
 
+  // 风险传导路径
   const renderRiskPath = useCallback((selectedCurrency = "GBP/USD") => {
     if (!charts.current.riskPath) {
       charts.current.riskPath = echarts.init(riskPathRef.current);
@@ -287,6 +276,7 @@ const Dashboard = () => {
     charts.current.riskPath.setOption(option, true);
   }, []);
 
+  // 账期风险分布
   const renderPaymentTermRisk = useCallback(() => {
     if (!charts.current.paymentTermRisk) {
       charts.current.paymentTermRisk = echarts.init(paymentTermRiskRef.current);
@@ -318,6 +308,7 @@ const Dashboard = () => {
     charts.current.paymentTermRisk.setOption(option);
   }, []);
 
+  // ERI指数趋势
   const renderERI = useCallback(() => {
     if (!charts.current.eri) {
       charts.current.eri = echarts.init(eriRef.current);
@@ -374,6 +365,7 @@ const Dashboard = () => {
     charts.current.eri.setOption(option);
   }, []);
 
+  // 风险信号分析
   const renderRiskSignals = useCallback(() => {
     if (!charts.current.riskSignals) {
       charts.current.riskSignals = echarts.init(riskSignalsRef.current);
@@ -432,6 +424,7 @@ const Dashboard = () => {
     charts.current.riskSignals.setOption(option);
   }, []);
 
+  // 单一货币对回测分析
   const renderBacktest = useCallback(
     (currencyPair = "EURUSD", timeframe = "1M") => {
       if (!charts.current.backtest) {
