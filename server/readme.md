@@ -250,25 +250,42 @@ const uploadPortfolio = async (portfolioData) => {
 };
 
 // 获取对冲建议
-const getHedgingAdvice = async () => {
-  const response = await fetch("/api/portfolio/hedging-advice");
-  return await response.json();
+const fetchHedgingAdvice = async () => {
+  try {
+    const response = await fetch('/api/portfolio/hedging-advice');
+    if (!response.ok) throw new Error('请求失败');
+    const data = await response.json();
+    if (data.success) {
+      // 处理返回的对冲建议
+      console.log(data.data);
+    }
+  } catch (error) {
+    console.error('获取对冲建议失败:', error);
+  }
 };
-
 // 获取风险信号分析
 const getRiskSignals = async () => {
   const response = await fetch("/api/portfolio/risk-signals");
   return await response.json();
 };
 
-// 提交压力测试情景
+// 提交压力测试
 const submitStressTest = async (scenario) => {
-  const response = await fetch("/api/risk/stress-test", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ scenario }),
-  });
-  return await response.json();
+  try {
+    const response = await fetch('/api/risk/stress-test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario })
+    });
+    if (!response.ok) throw new Error('请求失败');
+    const data = await response.json();
+    if (data.success) {
+      // 处理返回的压力测试结果
+      console.log(data.data);
+    }
+  } catch (error) {
+    console.error('提交压力测试失败:', error);
+  }
 };
 
 // 获取货币预测
