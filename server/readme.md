@@ -174,6 +174,37 @@ flask run
 }
 ```
 
+### 1.4 获取高风险货币列表
+
+- **URL**: /api/portfolio/currency-risk-list
+- **方法**: GET
+- **参数**: 无（使用之前上传的持仓数据）
+- **返回格式**:
+
+````json
+{
+  "success": true,
+  "data": {
+    "currencyExposure": [
+      {
+        "currency": "USD/JPY",
+        "riskRate": "高风险",
+        "tendency": "上升"
+      },
+      {
+        "currency": "EUR/USD",
+        "riskRate": "中风险",
+        "tendency": "下降"
+      },
+      {
+        "currency": "GBP/USD",
+        "riskRate": "低风险",
+        "tendency": "下降"
+      }
+    ]
+  }
+}
+
 ### 2. 风险管理
 
 #### 2.1 风险信号分析
@@ -203,7 +234,7 @@ flask run
     }
   }
 }
-```
+````
 
 #### 2.2 压力测试
 
@@ -252,15 +283,15 @@ const uploadPortfolio = async (portfolioData) => {
 // 获取对冲建议
 const fetchHedgingAdvice = async () => {
   try {
-    const response = await fetch('/api/portfolio/hedging-advice');
-    if (!response.ok) throw new Error('请求失败');
+    const response = await fetch("/api/portfolio/hedging-advice");
+    if (!response.ok) throw new Error("请求失败");
     const data = await response.json();
     if (data.success) {
       // 处理返回的对冲建议
       console.log(data.data);
     }
   } catch (error) {
-    console.error('获取对冲建议失败:', error);
+    console.error("获取对冲建议失败:", error);
   }
 };
 // 获取风险信号分析
@@ -272,19 +303,19 @@ const getRiskSignals = async () => {
 // 提交压力测试
 const submitStressTest = async (scenario) => {
   try {
-    const response = await fetch('/api/risk/stress-test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scenario })
+    const response = await fetch("/api/risk/stress-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scenario }),
     });
-    if (!response.ok) throw new Error('请求失败');
+    if (!response.ok) throw new Error("请求失败");
     const data = await response.json();
     if (data.success) {
       // 处理返回的压力测试结果
       console.log(data.data);
     }
   } catch (error) {
-    console.error('提交压力测试失败:', error);
+    console.error("提交压力测试失败:", error);
   }
 };
 
@@ -296,5 +327,48 @@ const getCurrencyPrediction = async (currency) => {
     body: JSON.stringify({ currency }),
   });
   return await response.json();
+};
+```
+
+```js
+/**
+ * 获取高风险货币列表
+ * @returns {Promise<Object>} 包含货币风险数据的响应
+ */
+const getCurrencyRiskList = async () => {
+  try {
+    const response = await fetch("/api/portfolio/currency-risk-list");
+    if (!response.ok) throw new Error("请求失败");
+    const data = await response.json();
+    if (data.success) {
+      // 处理返回的高风险货币列表
+      const currencyExposure = data.data.currencyExposure;
+      console.log("高风险货币列表:", currencyExposure);
+
+      // 可以进一步处理数据，如筛选出高风险货币
+      const highRiskCurrencies = currencyExposure.filter(
+        (item) => item.riskRate === "高风险"
+      );
+      console.log("高风险货币:", highRiskCurrencies);
+
+      return data.data;
+    } else {
+      console.error("获取货币风险列表失败:", data.message);
+      return null;
+    }
+  } catch (error) {
+    console.error("获取货币风险列表出错:", error);
+    return null;
+  }
+};
+
+// 使用示例
+const updateCurrencyRiskDisplay = async () => {
+  const riskData = await getCurrencyRiskList();
+  if (riskData) {
+    // 更新UI显示
+    // 例如：渲染表格或图表展示风险货币
+    renderCurrencyRiskTable(riskData.currencyExposure);
+  }
 };
 ```
