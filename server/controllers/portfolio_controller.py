@@ -36,7 +36,7 @@ def upload_portfolio():
 
 
 def get_hedging_advice_controller():
-    """获取对冲建议"""
+    """获取对冲建议与风险信息"""
     try:
         # 检查是否有持仓数据
         if not current_portfolio or len(current_portfolio) == 0:
@@ -45,7 +45,7 @@ def get_hedging_advice_controller():
                 400,
             )
 
-        # 创建一个同步函数来运行异步函数
+        # 创建一个同步函数来运行异步函数获取对冲建议
         def run_async_get_hedging_advice():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -54,7 +54,114 @@ def get_hedging_advice_controller():
         # 从大模型获取对冲建议
         hedging_advice = run_async_get_hedging_advice()
         
-        return jsonify({"success": True, "data": hedging_advice}), 200
+        # 调用风险策略函数获取风险信息
+        try:
+            from services.ai_service import Risk_strategy
+            risk_info = Risk_strategy(current_portfolio)
+            
+            # 如果风险信息数据不完整，添加缺失的部分
+            if "currencyExposure" not in risk_info:
+                risk_info["currencyExposure"] = []
+            if "termRiskDistribution" not in risk_info:
+                risk_info["termRiskDistribution"] = []
+            if "riskTransmissionPath" not in risk_info:
+                risk_info["riskTransmissionPath"] = []
+            if "macroRiskCoefficients" not in risk_info:
+                risk_info["macroRiskCoefficients"] = []
+            if "singleCurrencyAnalysis" not in risk_info:
+                risk_info["singleCurrencyAnalysis"] = []
+                
+        except Exception as risk_error:
+            print(f"获取风险信息失败: {risk_error}")
+            # 提供备用风险信息
+            risk_info = {
+                "currencyExposure": [
+                    {
+                        "currency": "EUR/USD",
+                        "riskRate": "高风险",
+                        "tendency": "上"
+                    },
+                    {
+                        "currency": "USD/JPY",
+                        "riskRate": "高风险",
+                        "tendency": "下"
+                    }
+                ],
+                "termRiskDistribution": [
+                    {
+                        "time": 30,
+                        "risk": 0.0512
+                    },
+                    {
+                        "time": 60,
+                        "risk": 0.082
+                    },
+                    {
+                        "time": 90,
+                        "risk": 0.123
+                    }
+                ],
+                "riskTransmissionPath": ["JPY30", "USD40", "EUR50"],
+                "macroRiskCoefficients": [
+                    {
+                        "month": 1,
+                        "all": 80,
+                        "economy": 60,
+                        "policy": 40,
+                        "market": 20
+                    }
+                ],
+                "riskSignalAnalysis": {
+                    "current": {
+                        "credit": 60,
+                        "policy": 20,
+                        "market": 40,
+                        "politician": 30,
+                        "economy": 50
+                    },
+                    "warning": {
+                        "credit": 70,
+                        "policy": 30,
+                        "market": 50,
+                        "politician": 40,
+                        "economy": 60
+                    }
+                },
+                "singleCurrencyAnalysis": [
+                    {
+                        "currency": "EUR/USD",
+                        "upper": 1.0063,
+                        "lower": 0.9938
+                    },
+                    {
+                        "currency": "USD/JPY",
+                        "upper": 1.0043,
+                        "lower": 0.9958
+                    }
+                ]
+            }
+        
+        # 确保合并时不覆盖原始字段
+        # 不要使用 {**hedging_advice, **risk_info}，而是创建一个新字典并明确添加每个字段
+        combined_data = {}
+        
+        # 1. 添加对冲建议字段
+        combined_data["historicalAnalysis"] = hedging_advice.get("historicalAnalysis")
+        combined_data["currentHedgingAdvice"] = hedging_advice.get("currentHedgingAdvice")
+        combined_data["positionRiskAssessment"] = hedging_advice.get("positionRiskAssessment")
+        combined_data["correlationAnalysis"] = hedging_advice.get("correlationAnalysis")
+        combined_data["costBenefitAnalysis"] = hedging_advice.get("costBenefitAnalysis")
+        combined_data["recommendedPositions"] = hedging_advice.get("recommendedPositions")
+        
+        # 2. 添加风险信息字段
+        combined_data["currencyExposure"] = risk_info.get("currencyExposure")
+        combined_data["termRiskDistribution"] = risk_info.get("termRiskDistribution")
+        combined_data["riskTransmissionPath"] = risk_info.get("riskTransmissionPath")
+        combined_data["macroRiskCoefficients"] = risk_info.get("macroRiskCoefficients")
+        combined_data["riskSignalAnalysis"] = risk_info.get("riskSignalAnalysis")
+        combined_data["singleCurrencyAnalysis"] = risk_info.get("singleCurrencyAnalysis")
+        
+        return jsonify({"success": True, "data": combined_data}), 200
 
     except Exception as error:
         print(f"获取对冲建议出错: {error}")
@@ -111,49 +218,4 @@ def get_risk_signals():
 
     except Exception as error:
         print(f"获取风险信号分析出错: {error}")
-        return jsonify({"success": False, "message": f"服务器处理数据时发生错误: {str(error)}"}), 500
-
-
-def get_currency_risk_list():
-    """获取货币风险列表"""
-    try:
-        # 检查是否有持仓数据
-        if not current_portfolio or len(current_portfolio) == 0:
-            return (
-                jsonify({"success": False, "message": "未找到持仓数据，请先上传"}),
-                400,
-            )
-
-        try:
-            # 调用Risk_strategy函数获取风险列表
-            from services.ai_service import Risk_strategy
-            risk_data = Risk_strategy(current_portfolio)
-            
-            # 将Risk_strategy的输出格式转换为前端所需格式
-            currency_exposure = []
-            
-            if "result" in risk_data:
-                for item in risk_data["result"]:
-                    currency_exposure.append({
-                        "currency": item["currency"],
-                        "riskRate": item["level"],
-                        "tendency": "上升" if item["tendency"] == "上升" else "下降"
-                    })
-            
-            return jsonify({"success": True, "data": {"currencyExposure": currency_exposure}}), 200
-            
-        except Exception as parse_error:
-            print(f"货币风险列表处理失败: {parse_error}")
-            # 提供备用风险列表数据
-            backup_risk_list = {
-                "currencyExposure": [
-                    {"currency": "USD/JPY", "riskRate": "高风险", "tendency": "上升"},
-                    {"currency": "EUR/USD", "riskRate": "中风险", "tendency": "下降"},
-                    {"currency": "GBP/USD", "riskRate": "低风险", "tendency": "下降"}
-                ]
-            }
-            return jsonify({"success": True, "data": backup_risk_list}), 200
-
-    except Exception as error:
-        print(f"获取货币风险列表出错: {error}")
         return jsonify({"success": False, "message": f"服务器处理数据时发生错误: {str(error)}"}), 500

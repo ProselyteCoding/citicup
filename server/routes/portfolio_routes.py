@@ -3,7 +3,6 @@ from controllers.portfolio_controller import (
     upload_portfolio,
     get_hedging_advice_controller,
     get_risk_signals,
-    get_currency_risk_list
 )
 
 # 创建Blueprint
@@ -17,6 +16,3 @@ portfolio_bp.route("/hedging-advice", methods=["GET"])(get_hedging_advice_contro
 
 # 接口三：获取风险信号分析
 portfolio_bp.route("/risk-signals", methods=["GET"])(get_risk_signals)
-
-# 接口四：获取高风险货币列表
-portfolio_bp.route("/currency-risk-list", methods=["GET"])(get_currency_risk_list)

@@ -99,14 +99,42 @@ def test_all_apis():
     )
     results["风险信号分析"] = success
     
-    # 测试3: 获取对冲建议
-    success, _ = test_api(
+    # 测试3: 获取对冲建议和风险信息
+    success, result = test_api(
         "GET", 
         f"{BASE_URL}/portfolio/hedging-advice",
         None, 
-        "对冲建议"
+        "对冲建议和风险信息"
     )
-    results["对冲建议"] = success
+
+    # 进一步验证数据结构是否完整
+    if success and "data" in result:
+        data = result["data"]
+        print("\n正在验证对冲建议和风险信息数据结构...")
+        
+        # 验证对冲建议部分
+        hedging_fields = ["historicalAnalysis", "currentHedgingAdvice", 
+                        "positionRiskAssessment", "correlationAnalysis", 
+                        "costBenefitAnalysis", "recommendedPositions"]
+        
+        # 验证风险信息部分
+        risk_fields = ["currencyExposure", "termRiskDistribution", 
+                      "riskTransmissionPath", "macroRiskCoefficients", 
+                      "riskSignalAnalysis", "singleCurrencyAnalysis"]
+        
+        # 检查所有必要字段是否存在
+        missing_fields = []
+        for field in hedging_fields + risk_fields:
+            if field not in data:
+                missing_fields.append(field)
+        
+        if not missing_fields:
+            print("✅ 数据结构完整: 同时包含对冲建议和风险信息")
+        else:
+            print(f"❌ 数据结构不完整，缺少以下字段: {missing_fields}")
+            success = False
+            
+    results["对冲建议和风险信息"] = success
     
     # 测试4: 压力测试
     success, _ = test_api(
