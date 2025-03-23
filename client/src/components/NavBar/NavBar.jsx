@@ -1,57 +1,50 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { NavLink } from "react-router-dom";
-import styles from "./NavBar.module.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import styles from "./NavBar.module.css";
+import { useStore } from "../../../store"; // 引入 zustand store
 
 const NavBar = () => {
-  const handleDownload = async () => {
+  const handleDownload = useCallback(async () => {
     try {
-      // 创建隐藏的 iframe 来加载页面三 (/OneClickDecision)
-      const iframe = document.createElement("iframe");
-      iframe.style.position = "fixed";
-      iframe.style.top = "-10000px";
-      iframe.style.left = "-10000px";
-      // 设置 iframe 初始宽度，根据实际情况调整
-      iframe.style.width = "1280px";
-      iframe.src = "/OneClickDecision";
-      document.body.appendChild(iframe);
+      // 从全局 store 获取数据，确保数据已加载
+      const { transformedData, stressTestData } = useStore.getState();
+      if (!transformedData) {
+        alert("数据尚未加载完成，请稍等...");
+        return;
+      }
 
-      iframe.onload = async () => {
-        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-        // 获取整个页面的真实高度
-        const fullHeight = iframeDocument.documentElement.scrollHeight;
-        // 设置 iframe 高度为整个页面高度
-        iframe.style.height = fullHeight + "px";
+      // 隐藏导航栏，避免截取到
+      const navBarElement = document.querySelector(`.${styles.navbar}`);
+      if (navBarElement) {
+        navBarElement.style.display = "none";
+      }
 
-        // 延时确保所有内容和样式加载完成
-        setTimeout(async () => {
-          // 使用 html2canvas 对 iframe 的 body 进行截图，scale 参数用于提升分辨率
-          const canvas = await html2canvas(iframeDocument.body, {
-            scale: 3, // 调高 scale 值可以提升截图像素
-            height: fullHeight,
-            windowHeight: fullHeight,
-            scrollY: 0,
-            useCORS: true,
-          });
-          const imgData = canvas.toDataURL("image/png");
+      // 直接对当前页面（document.body）截图
+      const canvas = await html2canvas(document.body, {
+        scale: 1, // 根据需要调整缩放以提升分辨率
+        useCORS: true,
+      });
+      const imgData = canvas.toDataURL("image/png");
 
-          // 根据 canvas 尺寸创建 PDF 文件
-          const pdf = new jsPDF({
-            orientation: "portrait",
-            unit: "px",
-            format: [canvas.width, canvas.height],
-          });
+      // 恢复导航栏显示
+      if (navBarElement) {
+        navBarElement.style.display = "";
+      }
 
-          pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-          pdf.save("一键式企业决策.pdf");
-          document.body.removeChild(iframe);
-        }, 500);
-      };
+      // 生成 PDF 文件
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save("一键式企业决策报告.pdf");
     } catch (error) {
-      console.error("下载页面截图失败:", error);
+      console.error("下载报告失败:", error);
     }
-  };
+  }, []);
 
   return (
     <nav className={styles.navbar}>
@@ -97,7 +90,7 @@ const NavBar = () => {
           <h3>"一键式"企业决策</h3>
           <p>智能建议与执行</p>
         </NavLink>
-        {/* 报告下载按钮：点击后全屏截图页面三并以 PDF 形式保存 */}
+        {/* 报告下载按钮 */}
         <div
           className={styles.navModule}
           onClick={handleDownload}
