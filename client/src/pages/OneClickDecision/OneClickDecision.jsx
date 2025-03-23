@@ -9,7 +9,7 @@ import { postTradeData} from "../../components/Api/api";
 
 const ForexRiskManagement = () => {
   // 从全局状态中获取解析后的持仓数据和测试数据
-  const { transformedData, analysis, setStressTestData } = useStore();
+  const { transformedData, stressTestData, setStressTestData } = useStore();
 
 
   // 图表容器 DOM 引用
@@ -140,7 +140,10 @@ const ForexRiskManagement = () => {
       },
       xAxis: {
         type: "category",
-        data: ["美联储加息", "欧债危机"],
+        data: [
+          stressTestData ? stressTestData.data.scenario : "美联储加息100bp",
+          "欧债危机"
+        ],
         axisLabel: { interval: 0, rotate: 15 },
       },
       yAxis: [
@@ -165,14 +168,20 @@ const ForexRiskManagement = () => {
         {
           name: "潜在损失",
           type: "bar",
-          data: [85000, 62000],
+          data: [
+            stressTestData ? stressTestData.data.money : 85000,
+            62000
+          ],
           itemStyle: { color: "#e74c3c" },
         },
         {
           name: "发生概率",
           type: "line",
           yAxisIndex: 1,
-          data: [15, 12],
+          data: [
+            stressTestData ? stressTestData.data.probability : 15,
+            12
+          ],
           itemStyle: { color: "#3498db" },
           label: { show: true, formatter: "{c}%" },
         },
@@ -269,7 +278,7 @@ const ForexRiskManagement = () => {
       
       // 更新全局状态，确保 setStressTestData 已定义
       setStressTestData(data);
-      
+      console.log(data)
       // 提示用户成功
       alert(`提交如下情境：${JSON.stringify(scenario)}，压力测试数据更新成功！`);
     } catch (error) {
@@ -344,6 +353,16 @@ const ForexRiskManagement = () => {
     };
     // eslint-disable-next-line
   }, []);
+
+  // 添加 stressTestData 更新监听
+useEffect(() => {
+  if (stressTestData && stressTestChartInstance.current) {
+    renderStressTestChart();
+  }
+}, [stressTestData]);
+
+
+
 
   return (
     <div>
@@ -492,17 +511,17 @@ const ForexRiskManagement = () => {
                   </thead>
                   <tbody>
                     <tr>
-                      <td>美联储加息100bp</td>
-                      <td className={styles.negative}>-$85,000</td>
+                      <td>{stressTestData ? stressTestData.data.scenario: "美联储加息100bp"}</td>
+                      <td className={styles.negative}> {stressTestData ? stressTestData.data.money : "-$85,000"}</td>
                       <td>
                         <span
                           className={`${styles.riskLevel} ${styles.riskHigh}`}
                         >
-                          高
+                          {stressTestData ? stressTestData.data.influence : "高"}
                         </span>
                       </td>
-                      <td>15%</td>
-                      <td>增加USD/JPY对冲比例</td>
+                      <td>{stressTestData ? stressTestData.data.probability : "15%"}</td>
+                      <td>{stressTestData ? stressTestData.data.suggestion : "增加USD/JPY对冲比例"}</td>
                     </tr>
                     <tr>
                       <td>欧债危机恶化</td>
