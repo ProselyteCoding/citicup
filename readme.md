@@ -148,7 +148,8 @@ json数据格式：
   
   "singleCurrencyAnalysis": [  // 单一货币对回测分析
     {
-      "currency": "USD",
+      "time": "2021-01-01",
+      "currency": "USD/JPY",
       "upper": 1.0513,         // 预测上限
       "lower": 0.9487          // 预测下限
     },
