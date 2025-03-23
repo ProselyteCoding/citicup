@@ -2,7 +2,7 @@ from flask import Blueprint
 from controllers.portfolio_controller import (
     upload_portfolio,
     get_hedging_advice_controller,
-    get_risk_signals
+    get_risk_signals,
 )
 
 # 创建Blueprint

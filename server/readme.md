@@ -203,7 +203,7 @@ flask run
     }
   }
 }
-```
+````
 
 #### 2.2 压力测试
 
@@ -252,15 +252,15 @@ const uploadPortfolio = async (portfolioData) => {
 // 获取对冲建议
 const fetchHedgingAdvice = async () => {
   try {
-    const response = await fetch('/api/portfolio/hedging-advice');
-    if (!response.ok) throw new Error('请求失败');
+    const response = await fetch("/api/portfolio/hedging-advice");
+    if (!response.ok) throw new Error("请求失败");
     const data = await response.json();
     if (data.success) {
       // 处理返回的对冲建议
       console.log(data.data);
     }
   } catch (error) {
-    console.error('获取对冲建议失败:', error);
+    console.error("获取对冲建议失败:", error);
   }
 };
 // 获取风险信号分析
@@ -272,19 +272,19 @@ const getRiskSignals = async () => {
 // 提交压力测试
 const submitStressTest = async (scenario) => {
   try {
-    const response = await fetch('/api/risk/stress-test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scenario })
+    const response = await fetch("/api/risk/stress-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scenario }),
     });
-    if (!response.ok) throw new Error('请求失败');
+    if (!response.ok) throw new Error("请求失败");
     const data = await response.json();
     if (data.success) {
       // 处理返回的压力测试结果
       console.log(data.data);
     }
   } catch (error) {
-    console.error('提交压力测试失败:', error);
+    console.error("提交压力测试失败:", error);
   }
 };
 
