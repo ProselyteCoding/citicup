@@ -3,7 +3,7 @@ import sys
 import os
 
 # 设置API密钥和端点（放在文件顶部）
-os.environ['OPENAI_API_KEY'] = 'sk-GQLASa7Vc1lY6NC9pw9X0OMpuct3i6eJz3CcHKfqAvwp5Xws'
+os.environ['OPENAI_API_KEY'] = 'sk-jh4XSNUdoKOgjFt02uglsxzNUvxpZ8fPKgjf7fFVcNPinLxt' #已经更改新的了
 os.environ['OPENAI_API_BASE'] = 'https://api.chatanywhere.tech/v1'
 # 添加大模型目录到路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -939,6 +939,8 @@ async def get_stress_test_result(scenario):
 
 
 
+
+
 #这里是页面三最下方的五个板块（即智能市场交易系统）
 #调用Hedging_strategy(input)即可，这里的input是用户的json，大概在1214行
 
@@ -973,8 +975,8 @@ from langchain_core.prompts import PromptTemplate
 import os
 #https://github.com/chatanywhere/GPT_API_free 免费领取
 #免费版支持gpt-4o一天5次；支持deepseek-r1, deepseek-v3一天30次，支持gpt-4o-mini，gpt-3.5-turbo一天200次。
-os.environ['OPENAI_API_KEY']='sk-jh4XSNUdoKOgjFt02uglsxzNUvxpZ8fPKgjf7fFVcNPinLxt'
-os.environ['OPENAI_API_BASE']='https://api.chatanywhere.tech/v1'
+# os.environ['OPENAI_API_KEY']='sk-jh4XSNUdoKOgjFt02uglsxzNUvxpZ8fPKgjf7fFVcNPinLxt'
+# os.environ['OPENAI_API_BASE']='https://api.chatanywhere.tech/v1'
 
 # 定义模型
 # model_name = "gpt-4o"
@@ -1276,8 +1278,8 @@ from langchain_core.prompts import PromptTemplate
 import os
 
 # 设置API密钥和端点
-os.environ['OPENAI_API_KEY'] = 'sk-jh4XSNUdoKOgjFt02uglsxzNUvxpZ8fPKgjf7fFVcNPinLxt'
-os.environ['OPENAI_API_BASE'] = 'https://api.chatanywhere.tech/v1'
+# os.environ['OPENAI_API_KEY'] = 'sk-jh4XSNUdoKOgjFt02uglsxzNUvxpZ8fPKgjf7fFVcNPinLxt'
+# os.environ['OPENAI_API_BASE'] = 'https://api.chatanywhere.tech/v1'
 
 # 定义模型
 # model_name = "gpt-4o"
