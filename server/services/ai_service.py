@@ -1290,7 +1290,7 @@ def Hedging_strategy(input:list)->dict:
 
 
 #这个是页面二的三个板块（账期风险分布，风险传到路径，宏观风险指数）
-#Risk_strategy(input_data)，input_data还是表示json，大概在1436行
+#sb_Risk_strategy(input_data)，input_data还是表示json，大概在1436行
 
 #输出如下
 #解释：1.currencyExposure不用管
@@ -1480,7 +1480,7 @@ builder.add_edge("tools", "assistant")
 react_graph = builder.compile()
 
 # 输入持仓比例List 输出风险分析Json
-def Risk_strategy(input: List[Dict]) -> dict:
+def sb_Risk_strategy(input: List[Dict]) -> dict:
     message = [HumanMessage(content=str(input))]
     result_raw = react_graph.invoke({"messages": message})
     prompt = PromptTemplate(
