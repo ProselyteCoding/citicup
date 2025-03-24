@@ -28,13 +28,15 @@ const Dashboard = () => {
   // 状态管理
   const [selectedHighRiskCurrency, setSelectedHighRiskCurrency] = useState("");
   const [lastUpdateTime, setLastUpdateTime] = useState("--");
-  const [highRiskCurrencies, setHighRiskCurrencies] = useState([]);
+  const [highRiskCurrencies, setHighRiskCurrencies] = useState([
+    {'currency': 'CNY/USD', 'riskLevel': '低风险','exposure':'50%', 'tendency': '上升'}, {'currency': 'CNY/EUR', 'riskLevel': '低风险','exposure':'25%', 'tendency': '下降'}, {'currency': 'USD/JPY', 'riskLevel': '低风险','exposure':'25%', 'tendency': '上升'}
+  ]);
 
   // 模拟数据
   const currencyPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD"];
 
   // 生成日期数据
-  const generateDates = useCallback((timeframe) => {
+  const generateDates = useCallback((timeframe) => { 
     const dates = [];
     const now = new Date();
     let points;
@@ -305,8 +307,10 @@ const Dashboard = () => {
       ],
     };
     charts.current.paymentTermRisk.setOption(option);
-  }, []);
-
+  }, [adviceData]);
+  useEffect(() => {
+    renderPaymentTermRisk();
+  }, [renderPaymentTermRisk, adviceData]);
   // ERI指数趋势
   const renderERI = useCallback(() => {
     if (!charts.current.eri) {
@@ -547,6 +551,7 @@ const Dashboard = () => {
     renderRiskSignals,
     renderBacktest,
     updateLastScanTime,
+    adviceData
   ]);
 
   return (
@@ -632,14 +637,14 @@ const Dashboard = () => {
                             </td>
                             <td>{item.exposure}</td>
                             <td>
-                              {item.trend === "up" ? (
+                              {item.tendency === "上升" ? (
                                 <i
                                   className="fas fa-arrow-up"
                                   style={{ color: "#ff4d4f" }}
                                 ></i>
                               ) : (
                                 <i
-                                  className="fas fa-arrow-right"
+                                  className="fas fa-arrow-down"
                                   style={{ color: "#faad14" }}
                                 ></i>
                               )}
