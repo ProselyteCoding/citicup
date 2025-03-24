@@ -452,7 +452,7 @@ def risk_signal_analysis(proportion: list) -> dict:
 
 #--------wl写的---------------
 #页面二的第二个板块：高风险货币列表
-#懒得改他代码了 ，你去找他这个函数def Risk_strategy(input: list) -> dict: 在812行左右
+#懒得改他代码了 ，你去找他这个函数def qushi_Risk_strategy(input: list) -> dict: 在812行左右
 #输入还是json格式的proportion
 # 输出（只需要看那个是中低高风险 还有那个上升下降趋势）：{
 #     "result": [
@@ -817,7 +817,7 @@ react_graph = builder.compile()
 
 
 # 输入持仓比例List 输出对冲策略Json
-def Risk_strategy(input: list) -> dict:
+def qushi_Risk_strategy(input: list) -> dict:
     message = [HumanMessage(content=str(input))]
     result_raw = react_graph.invoke({"messages": message})
     prompt = PromptTemplate(
