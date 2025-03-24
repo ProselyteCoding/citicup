@@ -1,13 +1,3 @@
-/*
- * @Author: ourEDA MaMing
- * @Date: 2025-03-18 19:21:37
- * @LastEditors: ourEDA MaMing
- * @LastEditTime: 2025-03-23 23:54:31
- * @FilePath: \citicup\client\store.js
- * @Description: 李猴啊
- * 
- * Copyright (c) 2025 by FanZDStar , All Rights Reserved. 
- */
 import { create } from "zustand";
 
 export const useStore = create((set) => ({
