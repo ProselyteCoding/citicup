@@ -116,6 +116,14 @@ flask run
   "success": true,
   "data": {
     "historicalAnalysis": null,
+     "currencyExposure": [      // 高风险货币列表
+    {
+      "currency": "USD/JPY",  // 货币对 string
+      "riskRate": "高风险", // 风险率 string
+      "tendency": "上" // 趋势 string
+    },
+    // ...其他货币对
+  ],
     "currentHedgingAdvice": {
       "volatility": 0.125,
       "emotion": "偏多",
